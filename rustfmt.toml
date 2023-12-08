@@ -1,0 +1,12 @@
+# Sync with upstream ../forky/rustfmt.toml
+hard_tabs = true
+blank_lines_lower_bound = 0
+blank_lines_upper_bound = 10
+fn_single_line = true
+
+max_width=80
+fn_call_width=60
+format_generated_files = false
+group_imports = "One"
+imports_granularity = "Item"
+imports_layout = "Vertical"

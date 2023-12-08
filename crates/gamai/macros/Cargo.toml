@@ -1,0 +1,20 @@
+[package]
+name = "gamai_macros"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+documentation = { workspace = true }
+license = { workspace = true }
+readme = "README.md"
+description = "macro crate for gamai"
+repository = { workspace = true }
+
+
+[lib]
+proc-macro = true
+
+[dependencies]
+anyhow = "1"
+proc-macro2 = "1.0.47"
+syn = { version = "2.0.*", features = ["full"] }
+quote = "1.0.21"

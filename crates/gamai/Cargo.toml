@@ -1,0 +1,32 @@
+[package]
+name = "gamai"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+readme = { workspace = true }
+description = { workspace = true }
+documentation = { workspace = true }
+categories = { workspace = true }
+keywords = { workspace = true }
+
+[dependencies]
+gamai_macros = { workspace = true }
+
+
+anyhow = { workspace = true }
+petgraph = { workspace = true }
+
+bevy_ecs = { workspace = true }
+bevy_app = { workspace = true }
+bevy_time = { workspace = true }
+bevy_utils = { workspace = true }
+bevy_derive = { workspace = true }
+
+[dev-dependencies]
+sweet = { workspace = true }
+
+[[example]]
+name = "test_gamai"
+path = "test/sweet.rs"
