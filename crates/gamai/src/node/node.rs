@@ -1,3 +1,5 @@
+// use super::sync_run_timers;
+use super::sync_running;
 use crate::prelude::*;
 use bevy_app::App;
 use bevy_app::Update;
@@ -49,7 +51,40 @@ impl<T1: IntoNode, T2: IntoNode> IntoNodes for (T1, T2) {
 pub trait IntoNode {
 	fn into_node(self) -> Node;
 }
+impl IntoNode for () {
+	fn into_node(self) -> Node {
+		Node {
+			node_structs: Vec::new(),
+			node_systems: Vec::new(),
+			children: Vec::new(),
+		}
+	}
+}
 
+impl IntoNode for Node {
+	fn into_node(self) -> Node { self }
+}
+
+impl<T1: IntoNode, T2: IntoNode> IntoNode for (T1, T2) {
+	fn into_node(self) -> Node {
+		let mut this = Node {
+			node_structs: Vec::new(),
+			node_systems: Vec::new(),
+			children: Vec::new(),
+		};
+
+		let a = self.0.into_node();
+		let b = self.1.into_node();
+
+		this.node_structs.extend(a.node_structs);
+		this.node_structs.extend(b.node_structs);
+		this.node_systems.extend(a.node_systems);
+		this.node_systems.extend(b.node_systems);
+		this.children.extend(a.children);
+		this.children.extend(b.children);
+		this
+	}
+}
 
 impl<T> IntoNode for T
 where
@@ -62,10 +97,6 @@ where
 			children: Vec::new(),
 		}
 	}
-}
-
-impl IntoNode for Node {
-	fn into_node(self) -> Node { self }
 }
 
 pub struct Node {
@@ -88,6 +119,12 @@ impl Node {
 	pub fn with_children(mut self, children: impl IntoNodes) -> Self {
 		self.children = children.into_nodes();
 		self
+	}
+
+	pub fn spawn_running(&self, world: &mut World, target: Entity) -> Entity {
+		let root = self.spawn_graph(world, target);
+		world.entity_mut(root).insert(Running);
+		root
 	}
 
 	pub fn spawn_graph(&self, world: &mut World, target: Entity) -> Entity {
@@ -115,6 +152,10 @@ impl Node {
 		app.configure_sets(Update, PreNodeUpdateSet);
 		app.configure_sets(Update, NodeUpdateSet.after(PreNodeUpdateSet));
 		app.configure_sets(Update, PostNodeUpdateSet.after(NodeUpdateSet));
+
+		// app.add_systems(Update, sync_run_timers.in_set(PostNodeUpdateSet));
+		app.add_systems(Update, sync_running.in_set(PostNodeUpdateSet));
+
 		self.add_systems_to_schedule(
 			app,
 			Update,

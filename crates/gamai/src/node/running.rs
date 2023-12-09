@@ -34,7 +34,7 @@ pub struct RunTimer {
 
 
 
-
+/// Syncs [`RunTimer`] components, by default added to [`PreNodeUpdateSet`].
 pub fn sync_run_timers(
 	time: Res<Time>,
 	mut timers: Query<&mut RunTimer>,
@@ -45,19 +45,21 @@ pub fn sync_run_timers(
 		timer.last_started.tick(time.delta());
 		timer.last_stopped.tick(time.delta());
 	}
-
+	
 	for added in added.iter() {
 		if let Ok(mut timer) = timers.get_mut(added) {
 			timer.last_started.reset();
 		}
 	}
-
+	
 	for removed in removed.read() {
 		if let Ok(mut timer) = timers.get_mut(removed) {
 			timer.last_stopped.reset();
 		}
 	}
 }
+
+/// Syncs [`Running`] and [`RunResult`] components, by default added to [`PostNodeUpdateSet`].
 pub fn sync_running(
 	mut commands: Commands,
 	// occurs immediately after `RunResult` is added

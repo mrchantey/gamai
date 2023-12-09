@@ -18,7 +18,7 @@ pub fn works() -> Result<()> {
 	));
 
 	node.add_systems(&mut app);
-	let node_entity = node.spawn_graph(&mut app.world, target);
+	let node_entity = node.spawn_running(&mut app.world, target);
 
 	let graph = NodeGraph::<Score>::new(node_entity, &app.world);
 	println!("{:?}", graph);

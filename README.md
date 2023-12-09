@@ -18,6 +18,10 @@ By default there are three system sets:
 
 
 
+### On Behavior Trees
+
+While there is no technical limitation for creating cyclic behavior 'graphs' where nodes could jump to various other points, this should be done with caution as it has the same antipattern consequences as the infamous GOTO statement.
+
 ### Multiple Ticks Per Frame
 
 By default all node systems are run in parallel which means that if multiple ticks per render frame are required.

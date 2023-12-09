@@ -24,6 +24,7 @@ pub mod prelude {
 	pub use crate::node::TargetEntity;
 	pub use crate::prop::Prop;
 	pub use crate::prop::SyncSystem;
+	pub use crate::selectors::SequenceSelector;
 	pub use crate::selectors::UtilitySelector;
 	pub use gamai_macros::child_props;
 	pub use gamai_macros::node;
