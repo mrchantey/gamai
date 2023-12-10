@@ -1,26 +1,32 @@
 use crate::prelude::*;
 use bevy_ecs::prelude::*;
 
-#[node(system=always_run_result_success)]
-#[derive(Default, Clone, Component)]
-pub struct AlwaysRunResultSuccess;
 
-pub fn always_run_result_success(
+#[node(system=empty_action)]
+#[derive(Default, Clone, Component)]
+pub struct EmptyAction;
+pub fn empty_action() {}
+
+#[node(system=success_action)]
+#[derive(Default, Clone, Component)]
+pub struct SuccessAction;
+
+pub fn success_action(
 	mut commands: Commands,
-	mut query: Query<Entity, (With<AlwaysRunResultSuccess>, With<Running>)>,
+	mut query: Query<Entity, (With<SuccessAction>, With<Running>)>,
 ) {
 	for entity in query.iter_mut() {
 		commands.entity(entity).insert(RunResult::Success);
 	}
 }
 
-#[node(system=always_run_result_failure)]
+#[node(system=failure_action)]
 #[derive(Default, Clone, Component)]
-pub struct AlwaysRunResultFailure;
+pub struct FailureAction;
 
-pub fn always_run_result_failure(
+pub fn failure_action(
 	mut commands: Commands,
-	mut query: Query<Entity, (With<AlwaysRunResultFailure>, With<Running>)>,
+	mut query: Query<Entity, (With<FailureAction>, With<Running>)>,
 ) {
 	for entity in query.iter_mut() {
 		commands.entity(entity).insert(RunResult::Failure);

@@ -29,6 +29,18 @@ impl<'a, T: Component> NodeGraph<'a, T> {
 		this
 	}
 
+	pub fn index(
+		entity: Entity,
+		world: &'a World,
+		index: usize,
+	) -> Option<&'a T> {
+		NodeGraph::<T>::new(entity, world)
+			.node_weight(NodeIndex::new(index))
+			.unwrap()
+			.as_ref()
+			.copied()
+	}
+
 	fn add_recursive(&mut self, entity: Entity, world: &'a World) -> NodeIndex {
 		let value = world.get::<T>(entity);
 		let node_index = self.add_node(value);

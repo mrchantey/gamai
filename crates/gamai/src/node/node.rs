@@ -24,11 +24,11 @@ pub trait NodeSystem: SyncSystem {
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
-pub struct PreNodeUpdateSet;
+pub struct PreRunSet;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
-pub struct NodeUpdateSet;
+pub struct RunSet;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
-pub struct PostNodeUpdateSet;
+pub struct PostRunSet;
 
 pub trait NodeStruct {
 	fn init(&self, entity: &mut EntityWorldMut<'_>);
@@ -121,12 +121,16 @@ impl Node {
 		self
 	}
 
-	pub fn spawn_running(&self, world: &mut World, target: Entity) -> Entity {
+	/// Spawn a node graph for the given target entity.
+	/// The [`Running`] component is added to the root.
+	pub fn spawn(&self, world: &mut World, target: Entity) -> Entity {
 		let root = self.spawn_graph(world, target);
 		world.entity_mut(root).insert(Running);
 		root
 	}
 
+	/// Spawn a node graph for the given target entity.
+	/// No additional components are added.
 	pub fn spawn_graph(&self, world: &mut World, target: Entity) -> Entity {
 		let edges = self
 			.children
@@ -149,19 +153,16 @@ impl Node {
 	}
 
 	pub fn add_systems(&self, app: &mut App) {
-		app.configure_sets(Update, PreNodeUpdateSet);
-		app.configure_sets(Update, NodeUpdateSet.after(PreNodeUpdateSet));
-		app.configure_sets(Update, PostNodeUpdateSet.after(NodeUpdateSet));
-
-		// app.add_systems(Update, sync_run_timers.in_set(PostNodeUpdateSet));
-		app.add_systems(Update, sync_running.in_set(PostNodeUpdateSet));
-
-		self.add_systems_to_schedule(
-			app,
+		app.configure_sets(Update, PreRunSet);
+		app.configure_sets(Update, RunSet.after(PreRunSet));
+		app.configure_sets(Update, PostRunSet.after(RunSet));
+		app.add_systems(
 			Update,
-			NodeUpdateSet,
-			PostNodeUpdateSet,
+			apply_deferred.after(RunSet).before(PostRunSet),
 		);
+		app.add_systems(Update, sync_running.in_set(PostRunSet));
+
+		self.add_systems_to_schedule(app, Update, RunSet, PostRunSet);
 	}
 
 	pub fn add_systems_to_schedule(

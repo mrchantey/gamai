@@ -1,33 +1,29 @@
 use crate::prelude::*;
 use bevy_ecs::prelude::*;
 
-#[node(system=score_always_pass)]
+#[node(system=pass_scorer)]
 #[derive(Clone, Component)]
-pub struct ScoreAlwaysPass {
+pub struct PassScorer {
 	score: Score,
 }
 
-impl Default for ScoreAlwaysPass {
+impl Default for PassScorer {
 	fn default() -> Self { Self { score: Score::Pass } }
 }
 
-pub fn score_always_pass(
-	mut query: Query<&mut ScoreAlwaysPass, With<Running>>,
-) {
+pub fn pass_scorer(mut query: Query<&mut PassScorer, With<Running>>) {
 	for mut item in query.iter_mut() {
 		item.score = Score::Pass;
 	}
 }
 
-#[node(system=score_always_fail)]
+#[node(system=fail_scorer)]
 #[derive(Default, Clone, Component)]
-pub struct ScoreAlwaysFail {
+pub struct FailScorer {
 	score: Score,
 }
 
-pub fn score_always_fail(
-	mut query: Query<&mut ScoreAlwaysFail, With<Running>>,
-) {
+pub fn fail_scorer(mut query: Query<&mut FailScorer, With<Running>>) {
 	for mut item in query.iter_mut() {
 		item.score = Score::Fail;
 	}

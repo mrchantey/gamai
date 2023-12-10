@@ -1,33 +1,20 @@
 pub mod actions;
-pub mod prop;
-
-pub mod selectors;
-
 pub mod edge;
 pub mod node;
+pub mod prop;
+pub mod selectors;
 
 // allows proc macros to work internally
 extern crate self as gamai;
 
 pub mod prelude {
 
-	pub use crate::edge::Edges;
-	pub use crate::node::IntoNode;
-	pub use crate::node::IntoNodes;
-	pub use crate::node::Node;
-	pub use crate::node::NodeStruct;
-	pub use crate::node::NodeSystem;
-	pub use crate::node::RunResult;
-	pub use crate::node::RunTimer;
-	pub use crate::node::Running;
-	pub use crate::node::Score;
-	pub use crate::node::TargetEntity;
-	pub use crate::prop::Prop;
-	pub use crate::prop::SyncSystem;
-	pub use crate::selectors::SequenceSelector;
-	pub use crate::selectors::UtilitySelector;
-	pub use gamai_macros::child_props;
-	pub use gamai_macros::node;
+	pub use crate::actions::*;
+	pub use crate::edge::*;
+	pub use crate::node::*;
+	pub use crate::prop::*;
+	pub use crate::selectors::*;
+	pub use gamai_macros::*;
 }
 
 

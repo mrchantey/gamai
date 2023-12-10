@@ -1,8 +1,8 @@
 use super::*;
 use bevy_app::App;
-use gamai::actions::FailScorer;
-use gamai::actions::PassScorer;
+use gamai::actions::SuccessAction;
 use gamai::node::IntoNode;
+use gamai::node::NodeGraph;
 use gamai::prelude::*;
 use sweet::*;
 
@@ -11,15 +11,30 @@ pub fn works() -> Result<()> {
 	let mut app = App::new();
 	let target = app.world.spawn_empty().id();
 
-	let node = UtilitySelector.into_node().with_children((
-		(FailScorer::default(), SuccessAction),
-		(PassScorer::default(), SuccessAction),
-	));
+	let node = FallbackSelector
+		.into_node()
+		.with_children((FailureAction, SuccessAction));
 
 	node.add_systems(&mut app);
 	let root = node.spawn(&mut app.world, target);
 
 	app.update();
+	// child0 running
+	assert_nodes::<Running>(
+		root,
+		&app.world,
+		vec![(0, true), (1, true), (2, false)],
+	)?;
+
+	app.update();
+	assert_nodes::<Running>(
+		root,
+		&app.world,
+		vec![(0, true), (1, false), (2, false)],
+	)?;
+
+	app.update();
+	// child1 running
 	assert_nodes::<Running>(
 		root,
 		&app.world,
@@ -34,12 +49,12 @@ pub fn works() -> Result<()> {
 	)?;
 
 	app.update();
+	// all done
 	assert_nodes::<Running>(
 		root,
 		&app.world,
 		vec![(0, false), (1, false), (2, false)],
 	)?;
-
 	expect(NodeGraph::<RunResult>::index(root, &app.world, 0))
 		.to_be(Some(&RunResult::Success))?;
 

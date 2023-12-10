@@ -24,16 +24,14 @@ pub enum Score {
 
 
 impl PartialOrd for Score {
-	#[allow(unused_variables, unreachable_code)]
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-		todo!("test this");
 		let val = match (self, other) {
 			(Score::Fail, Score::Fail) => Ordering::Equal,
 			(Score::Fail, _) => Ordering::Less,
 			(_, Score::Fail) => Ordering::Greater,
 			(Score::Pass, Score::Pass) => Ordering::Equal,
-			(Score::Pass, _) => Ordering::Less,
-			(_, Score::Pass) => Ordering::Greater,
+			(Score::Pass, _) => Ordering::Greater,
+			(_, Score::Pass) => Ordering::Less,
 			(Score::Weight(w1), Score::Weight(w2)) => w1.total_cmp(&w2),
 		};
 		Some(val)

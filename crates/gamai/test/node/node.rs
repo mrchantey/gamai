@@ -1,10 +1,7 @@
 use bevy_app::App;
 use bevy_ecs::prelude::*;
-// use gamai::node::Node;
-use gamai::node::{
-	IntoNode,
-	TargetEntity,
-};
+use gamai::node::IntoNode;
+use gamai::node::TargetEntity;
 use gamai::prelude::*;
 use sweet::*;
 
