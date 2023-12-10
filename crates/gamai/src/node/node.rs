@@ -7,8 +7,6 @@ use bevy_derive::Deref;
 use bevy_derive::DerefMut;
 use bevy_ecs::prelude::*;
 use bevy_ecs::schedule::ScheduleLabel;
-use bevy_ecs::schedule::SystemConfigs;
-use bevy_ecs::system::EntityCommands;
 
 #[derive(Debug, PartialEq, Deref, DerefMut, Component)]
 pub struct TargetEntity(pub Entity);
@@ -20,77 +18,6 @@ pub struct RunSet;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
 pub struct PostRunSet;
 
-pub trait IntoNodeStruct {
-	fn into_node_struct(&self) -> &dyn NodeStruct;
-}
-
-
-pub trait NodeStruct: 'static {
-	fn init(&self, entity: &mut EntityWorldMut<'_>);
-	fn init_from_command(&self, entity: &mut EntityCommands);
-	fn get_sync_system(&self) -> SystemConfigs;
-	fn get_node_system(&self) -> SystemConfigs;
-}
-
-pub trait IntoNodes {
-	fn into_nodes(self) -> Vec<Node>;
-}
-
-impl IntoNodes for Node {
-	fn into_nodes(self) -> Vec<Node> { vec![self] }
-}
-impl<T1: IntoNode, T2: IntoNode> IntoNodes for (T1, T2) {
-	fn into_nodes(self) -> Vec<Node> {
-		vec![self.0.into_node(), self.1.into_node()]
-	}
-}
-
-pub trait IntoNode {
-	fn into_node(self) -> Node;
-}
-impl IntoNode for () {
-	fn into_node(self) -> Node {
-		Node {
-			items: Vec::new(),
-			children: Vec::new(),
-		}
-	}
-}
-
-impl IntoNode for Node {
-	fn into_node(self) -> Node { self }
-}
-
-impl<T1: IntoNode, T2: IntoNode> IntoNode for (T1, T2) {
-	fn into_node(self) -> Node {
-		let mut this = Node {
-			items: Vec::new(),
-			children: Vec::new(),
-		};
-
-		let a = self.0.into_node();
-		let b = self.1.into_node();
-
-		this.items.extend(a.items);
-		this.items.extend(b.items);
-		this.children.extend(a.children);
-		this.children.extend(b.children);
-		this
-	}
-}
-
-impl<T> IntoNode for T
-where
-	T: NodeStruct,
-{
-	fn into_node(self) -> Node {
-		Node {
-			items: vec![Box::new(self)],
-			children: Vec::new(),
-		}
-	}
-}
-
 
 pub struct Node {
 	pub items: Vec<Box<dyn NodeStruct>>,
@@ -98,16 +25,6 @@ pub struct Node {
 }
 
 impl Node {
-	// pub fn leaf(node: impl IntoNode) -> Self { Self::branch(node, Vec::new()) }
-
-	// pub fn branch(node: impl IntoNode, children: Vec<Node>) -> Self {
-	// 	Self {
-	// 		children,
-	// 		node_structs: vec![Box::new(node.clone())],
-	// 		node_systems: vec![Box::new(node.clone())],
-	// 	}
-	// }
-
 	pub fn with_children(mut self, children: impl IntoNodes) -> Self {
 		self.children = children.into_nodes();
 		self

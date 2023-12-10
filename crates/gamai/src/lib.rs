@@ -22,4 +22,6 @@ pub mod exports {
 	pub use bevy_ecs::prelude::*;
 	pub use bevy_ecs::schedule::SystemConfigs;
 	pub use bevy_ecs::system::EntityCommands;
+	pub use serde::Deserialize;
+	pub use serde::Serialize;
 }
