@@ -1,7 +1,8 @@
 use bevy_ecs::prelude::*;
+use serde::Deserialize;
+use serde::Serialize;
 use std::cmp::Ordering;
 use std::fmt::Debug;
-
 
 /// Indicate this node's parent will use the scores in the next tick.
 /// As this is frequently added and removed, it is `SparseSet`.
@@ -11,7 +12,9 @@ pub struct Scoring;
 
 
 /// Used to indicate to selectors how favorable a child node would be to run.
-#[derive(Default, Debug, Clone, Copy, Component, PartialEq)]
+#[derive(
+	Default, Serialize, Deserialize, Debug, Clone, Copy, Component, PartialEq,
+)]
 pub enum Score {
 	#[default]
 	/// The node should not run.

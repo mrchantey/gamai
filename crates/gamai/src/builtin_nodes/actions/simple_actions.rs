@@ -1,5 +1,7 @@
 use crate::prelude::*;
 use bevy_ecs::prelude::*;
+use serde::Deserialize;
+use serde::Serialize;
 
 
 #[node(system=empty_action)]
@@ -8,7 +10,7 @@ pub struct EmptyAction;
 pub fn empty_action() {}
 
 #[node(system=success_action)]
-#[derive(Default, Clone, Component)]
+#[derive(Default, Clone, Serialize, Deserialize, Component)]
 pub struct SuccessAction;
 
 pub fn success_action(
@@ -21,7 +23,7 @@ pub fn success_action(
 }
 
 #[node(system=failure_action)]
-#[derive(Default, Clone, Component)]
+#[derive(Default, Clone, Serialize, Deserialize, Component)]
 pub struct FailureAction;
 
 pub fn failure_action(

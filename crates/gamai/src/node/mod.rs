@@ -2,6 +2,8 @@ pub mod graph;
 pub use self::graph::*;
 pub mod node;
 pub use self::node::*;
+pub mod typed_node;
+pub use self::typed_node::*;
 pub mod running;
 pub use self::running::*;
 pub mod run_timer;

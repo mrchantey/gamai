@@ -1,10 +1,12 @@
 use crate::prelude::*;
 use bevy_ecs::prelude::*;
+use serde::Deserialize;
+use serde::Serialize;
 
 #[node(system=pass_scorer)]
-#[derive(Clone, Component)]
+#[derive(Clone, Serialize, Deserialize, Component)]
 pub struct PassScorer {
-	score: Score,
+	pub score: Score,
 }
 
 impl Default for PassScorer {
@@ -18,9 +20,9 @@ pub fn pass_scorer(mut query: Query<&mut PassScorer, With<Running>>) {
 }
 
 #[node(system=fail_scorer)]
-#[derive(Default, Clone, Component)]
+#[derive(Default, Serialize, Deserialize, Clone, Component)]
 pub struct FailScorer {
-	score: Score,
+	pub score: Score,
 }
 
 pub fn fail_scorer(mut query: Query<&mut FailScorer, With<Running>>) {

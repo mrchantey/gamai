@@ -54,26 +54,3 @@ pub fn node(attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn child_props(_attr: TokenStream, _item: TokenStream) -> TokenStream {
 	todo!()
 }
-
-
-/// Assign a system to a node.
-///
-/// ```rust
-/// #[node_system(my_action)]
-/// struct MyAction;
-///
-/// fn my_action(query: Query<&mut MyAction, With<Running>>) {
-///   for action in query.iter_mut() {
-/// 		// ...
-/// 	}
-/// }
-///
-/// ```
-///
-///
-#[proc_macro_attribute]
-pub fn node_system(attr: TokenStream, item: TokenStream) -> TokenStream {
-	parse_node_system(attr, item)
-		.unwrap_or_else(syn::Error::into_compile_error)
-		.into()
-}

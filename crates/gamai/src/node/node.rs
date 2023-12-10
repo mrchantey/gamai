@@ -5,23 +5,13 @@ use bevy_app::App;
 use bevy_app::Update;
 use bevy_derive::Deref;
 use bevy_derive::DerefMut;
-use bevy_ecs::entity::Entity;
 use bevy_ecs::prelude::*;
-use bevy_ecs::schedule::IntoSystemConfigs;
-use bevy_ecs::schedule::IntoSystemSetConfigs;
 use bevy_ecs::schedule::ScheduleLabel;
 use bevy_ecs::schedule::SystemConfigs;
 use bevy_ecs::system::EntityCommands;
-use bevy_ecs::world::EntityWorldMut;
-
 
 #[derive(Debug, PartialEq, Deref, DerefMut, Component)]
 pub struct TargetEntity(pub Entity);
-
-pub trait NodeSystem: SyncSystem {
-	fn get_node_system(&self) -> SystemConfigs;
-}
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
 pub struct PreRunSet;
@@ -30,9 +20,16 @@ pub struct RunSet;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
 pub struct PostRunSet;
 
-pub trait NodeStruct {
+pub trait IntoNodeStruct {
+	fn into_node_struct(&self) -> &dyn NodeStruct;
+}
+
+
+pub trait NodeStruct: 'static {
 	fn init(&self, entity: &mut EntityWorldMut<'_>);
 	fn init_from_command(&self, entity: &mut EntityCommands);
+	fn get_sync_system(&self) -> SystemConfigs;
+	fn get_node_system(&self) -> SystemConfigs;
 }
 
 pub trait IntoNodes {
@@ -54,8 +51,7 @@ pub trait IntoNode {
 impl IntoNode for () {
 	fn into_node(self) -> Node {
 		Node {
-			node_structs: Vec::new(),
-			node_systems: Vec::new(),
+			items: Vec::new(),
 			children: Vec::new(),
 		}
 	}
@@ -68,18 +64,15 @@ impl IntoNode for Node {
 impl<T1: IntoNode, T2: IntoNode> IntoNode for (T1, T2) {
 	fn into_node(self) -> Node {
 		let mut this = Node {
-			node_structs: Vec::new(),
-			node_systems: Vec::new(),
+			items: Vec::new(),
 			children: Vec::new(),
 		};
 
 		let a = self.0.into_node();
 		let b = self.1.into_node();
 
-		this.node_structs.extend(a.node_structs);
-		this.node_structs.extend(b.node_structs);
-		this.node_systems.extend(a.node_systems);
-		this.node_systems.extend(b.node_systems);
+		this.items.extend(a.items);
+		this.items.extend(b.items);
 		this.children.extend(a.children);
 		this.children.extend(b.children);
 		this
@@ -88,20 +81,19 @@ impl<T1: IntoNode, T2: IntoNode> IntoNode for (T1, T2) {
 
 impl<T> IntoNode for T
 where
-	T: 'static + Clone + NodeStruct + NodeSystem,
+	T: NodeStruct,
 {
 	fn into_node(self) -> Node {
 		Node {
-			node_structs: vec![Box::new(self.clone())],
-			node_systems: vec![Box::new(self)],
+			items: vec![Box::new(self)],
 			children: Vec::new(),
 		}
 	}
 }
 
+
 pub struct Node {
-	pub node_structs: Vec<Box<dyn NodeStruct>>,
-	pub node_systems: Vec<Box<dyn NodeSystem>>,
+	pub items: Vec<Box<dyn NodeStruct>>,
 	pub children: Vec<Node>,
 }
 
@@ -145,7 +137,7 @@ impl Node {
 			entity.insert(Edges(edges));
 		}
 
-		for node_struct in self.node_structs.iter() {
+		for node_struct in self.items.iter() {
 			node_struct.init(&mut entity);
 		}
 
@@ -172,7 +164,7 @@ impl Node {
 		node_system_set: impl SystemSet + Clone,
 		sync_system_set: impl SystemSet + Clone,
 	) {
-		for system in self.node_systems.iter() {
+		for system in self.items.iter() {
 			app.add_systems(
 				schedule.clone(),
 				system.get_node_system().in_set(node_system_set.clone()),

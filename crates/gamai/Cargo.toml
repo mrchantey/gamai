@@ -17,6 +17,8 @@ gamai_macros = { workspace = true }
 
 anyhow = { workspace = true }
 petgraph = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 
 bevy_ecs = { workspace = true }
 bevy_app = { workspace = true }

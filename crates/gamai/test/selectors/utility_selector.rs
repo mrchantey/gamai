@@ -1,8 +1,5 @@
 use super::*;
 use bevy_app::App;
-use gamai::actions::FailScorer;
-use gamai::actions::PassScorer;
-use gamai::node::IntoNode;
 use gamai::prelude::*;
 use sweet::*;
 
@@ -12,7 +9,7 @@ pub fn works() -> Result<()> {
 	let target = app.world.spawn_empty().id();
 
 	let node = UtilitySelector.into_node().with_children((
-		(FailScorer::default(), SuccessAction),
+		(FailScorer { score: Score::Fail }, SuccessAction),
 		(PassScorer::default(), SuccessAction),
 	));
 

@@ -26,6 +26,8 @@ gamai_macros = { path = "./crates/gamai/macros", version = "0.*" }
 
 anyhow = "1.0.75"
 petgraph = "0.6.4"
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
 
 bevy_ecs = { version = "0.12.*" }
 bevy_app = { version = "0.12.*" }

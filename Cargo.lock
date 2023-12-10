@@ -1138,6 +1138,8 @@ dependencies = [
  "bevy_utils",
  "gamai_macros",
  "petgraph",
+ "serde",
+ "serde_json",
  "sweet",
 ]
 

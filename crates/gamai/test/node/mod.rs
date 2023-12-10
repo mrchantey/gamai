@@ -6,3 +6,5 @@ pub mod running;
 pub use self::running::*;
 pub mod score;
 pub use self::score::*;
+pub mod serde;
+pub use self::serde::*;
