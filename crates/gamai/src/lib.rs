@@ -1,6 +1,7 @@
 pub mod builtin_nodes;
 pub mod edge;
 pub mod node;
+pub mod message;
 pub mod prop;
 
 // allows proc macros to work internally
@@ -12,6 +13,7 @@ pub mod prelude {
 	pub use crate::builtin_nodes::selectors::*;
 	pub use crate::builtin_nodes::*;
 	pub use crate::edge::*;
+	pub use crate::message::*;
 	pub use crate::node::*;
 	pub use crate::prop::*;
 	pub use gamai_macros::*;

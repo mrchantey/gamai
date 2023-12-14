@@ -14,14 +14,23 @@ pub fn parse_node_struct(
 ) -> Result<TokenStream> {
 	let ident = &input.ident;
 	let struct_insert = parse_struct_insert(input);
-	let sync_system = parse_sync_system(input);
+	let pre_sync_system = pre_sync_system(input);
+	let post_sync_system = post_sync_system(input);
 	let node_system = parse_node_system(args)?;
 
 	Ok(quote! {
 		impl NodeStruct for #ident{
 			#struct_insert
-			#sync_system
+			#pre_sync_system
+			#post_sync_system
 			#node_system
+		}
+
+
+		impl NodeStructMeta for #ident{
+			fn name(&self) -> &'static str{
+				stringify!(#ident)
+			}
 		}
 	})
 }
@@ -51,10 +60,10 @@ fn parse_struct_insert(input: &ItemStruct) -> TokenStream {
 }
 
 
-fn parse_sync_system(input: &ItemStruct) -> TokenStream {
+fn post_sync_system(input: &ItemStruct) -> TokenStream {
 	let ident = &input.ident;
 
-	let query_field_types = input
+	let prop_types = input
 		.fields
 		.iter()
 		.map(|field| {
@@ -63,7 +72,7 @@ fn parse_sync_system(input: &ItemStruct) -> TokenStream {
 		})
 		.collect::<TokenStream>();
 
-	let query_field_destructs = input
+	let prop_destructs = input
 		.fields
 		.iter()
 		.map(|field| {
@@ -72,7 +81,7 @@ fn parse_sync_system(input: &ItemStruct) -> TokenStream {
 		})
 		.collect::<TokenStream>();
 
-	let query_field_assignments = input
+	let prop_assignments = input
 		.fields
 		.iter()
 		.map(|field| {
@@ -82,16 +91,66 @@ fn parse_sync_system(input: &ItemStruct) -> TokenStream {
 		.collect::<TokenStream>();
 
 	quote! {
-		fn get_sync_system(&self) -> SystemConfigs {
-			#[allow(non_snake_case)]
-			fn sync_system(mut query: Query<(&#ident,#query_field_types), Changed<#ident>>){
+		fn get_post_sync_system(&self) -> SystemConfigs {
 
-			for (value, #query_field_destructs) in query.iter_mut(){
-				#query_field_assignments
+			fn post_sync_system(mut query: Query<(&#ident,#prop_types), Changed<#ident>>){
+				for (value, #prop_destructs) in query.iter_mut(){
+					#prop_assignments
 				}
 			}
 
-			sync_system.into_configs()
+			post_sync_system.into_configs()
+		}
+	}
+}
+fn pre_sync_system(input: &ItemStruct) -> TokenStream {
+	let ident = &input.ident;
+
+	let prop_changed = input
+		.fields
+		.iter()
+		.map(|field| {
+			let ty = &field.ty;
+			quote!(Changed<#ty>, )
+		})
+		.collect::<TokenStream>();
+
+		let prop_types = input
+		.fields
+		.iter()
+		.map(|field| {
+			let ty = &field.ty;
+			quote!(&#ty)
+		})
+		.collect::<TokenStream>();
+
+	let prop_destructs = input
+		.fields
+		.iter()
+		.map(|field| {
+			let field_ident = &field.ident;
+			quote!(#field_ident, )
+		})
+		.collect::<TokenStream>();
+
+	let prop_assignments = input
+		.fields
+		.iter()
+		.map(|field| {
+			let field_ident = &field.ident;
+			quote!(value.#field_ident = *#field_ident;)
+		})
+		.collect::<TokenStream>();
+
+	quote! {
+		fn get_pre_sync_system(&self)->SystemConfigs{
+
+			fn pre_sync_system(mut query: Query<(&mut #ident,#prop_types),Or<(#prop_changed)>>){
+				for (mut value,#prop_destructs) in query.iter_mut(){
+					#prop_assignments
+				}
+			}
+			pre_sync_system.into_configs()
 		}
 	}
 }

@@ -12,11 +12,11 @@ use bevy_ecs::schedule::ScheduleLabel;
 pub struct TargetEntity(pub Entity);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
-pub struct PreRunSet;
+pub struct PreTickSet;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
-pub struct RunSet;
+pub struct TickSet;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
-pub struct PostRunSet;
+pub struct PostTickSet;
 
 
 pub struct Node {
@@ -62,33 +62,44 @@ impl Node {
 	}
 
 	pub fn add_systems(&self, app: &mut App) {
-		app.configure_sets(Update, PreRunSet);
-		app.configure_sets(Update, RunSet.after(PreRunSet));
-		app.configure_sets(Update, PostRunSet.after(RunSet));
+		app.configure_sets(Update, PreTickSet);
+		app.configure_sets(Update, TickSet.after(PreTickSet));
+		app.configure_sets(Update, PostTickSet.after(TickSet));
 		app.add_systems(
 			Update,
-			apply_deferred.after(RunSet).before(PostRunSet),
+			apply_deferred.after(TickSet).before(PostTickSet),
 		);
-		app.add_systems(Update, sync_running.in_set(PostRunSet));
+		app.add_systems(Update, sync_running.in_set(PostTickSet));
 
-		self.add_systems_to_schedule(app, Update, RunSet, PostRunSet);
+		self.add_systems_to_schedule(
+			app,
+			Update,
+			PreTickSet,
+			TickSet,
+			PostTickSet,
+		);
 	}
 
 	pub fn add_systems_to_schedule(
 		&self,
 		app: &mut App,
 		schedule: impl ScheduleLabel + Clone,
-		node_system_set: impl SystemSet + Clone,
-		sync_system_set: impl SystemSet + Clone,
+		pre_tick_set: impl SystemSet + Clone,
+		tick_set: impl SystemSet + Clone,
+		post_tick_set: impl SystemSet + Clone,
 	) {
 		for system in self.items.iter() {
+			// app.add_systems(
+			// 	schedule.clone(),
+			// 	system.get_pre_sync_system().in_set(pre_tick_set.clone()),
+			// );
 			app.add_systems(
 				schedule.clone(),
-				system.get_node_system().in_set(node_system_set.clone()),
+				system.get_node_system().in_set(tick_set.clone()),
 			);
 			app.add_systems(
 				schedule.clone(),
-				system.get_sync_system().in_set(sync_system_set.clone()),
+				system.get_post_sync_system().in_set(post_tick_set.clone()),
 			);
 		}
 
@@ -96,8 +107,9 @@ impl Node {
 			child.add_systems_to_schedule(
 				app,
 				schedule.clone(),
-				node_system_set.clone(),
-				sync_system_set.clone(),
+				pre_tick_set.clone(),
+				tick_set.clone(),
+				post_tick_set.clone(),
 			);
 		}
 	}

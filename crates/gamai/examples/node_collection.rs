@@ -1,10 +1,10 @@
-use gamai::node_collection;
+use gamai::node_list;
 use gamai::prelude::*;
 pub fn main() {}
 
 
-node_collection!(
-	FoobarCollection,
+node_list!(
+	FoobarList,
 	[
 		PassScorer,
 		FailScorer,

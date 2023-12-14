@@ -1,16 +1,16 @@
 use crate::builtin_nodes::actions::*;
 use crate::builtin_nodes::selectors::*;
-use crate::node_collection;
+use crate::node_list;
 
 
-node_collection!(
+node_list!(
 	BuiltinActions,
 	[PassScorer, FailScorer, SuccessAction, FailureAction]
 );
 
-node_collection!(
+node_list!(
 	BuiltinSelectors,
 	[FallbackSelector, SequenceSelector, UtilitySelector]
 );
 
-node_collection!(BuiltinNodes, [BuiltinActions, BuiltinSelectors]);
+node_list!(BuiltinNodes, [BuiltinActions, BuiltinSelectors]);

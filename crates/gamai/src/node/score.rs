@@ -1,3 +1,4 @@
+// use crate::prelude::*;
 use bevy_ecs::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
@@ -40,3 +41,11 @@ impl PartialOrd for Score {
 		Some(val)
 	}
 }
+
+
+// impl PropInput
+
+// impl DropdownProp<Score> for Score{
+
+
+// }
