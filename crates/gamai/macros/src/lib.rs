@@ -1,5 +1,7 @@
 mod node;
 use node::*;
+mod action;
+use action::*;
 use proc_macro::TokenStream;
 mod utils;
 // pub(crate) use utils::*;
@@ -42,8 +44,8 @@ mod utils;
 #[proc_macro_attribute]
 pub fn node(attr: TokenStream, item: TokenStream) -> TokenStream {
 	parse_node(attr, item)
-		.unwrap_or_else(syn::Error::into_compile_error)
-		.into()
+	.unwrap_or_else(syn::Error::into_compile_error)
+	.into()
 }
 
 
@@ -53,4 +55,12 @@ pub fn node(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn child_props(_attr: TokenStream, _item: TokenStream) -> TokenStream {
 	todo!()
+}
+
+
+#[proc_macro_attribute]
+pub fn action(attr: TokenStream, item: TokenStream) -> TokenStream {
+	parse_action(attr, item)
+		.unwrap_or_else(syn::Error::into_compile_error)
+		.into()
 }

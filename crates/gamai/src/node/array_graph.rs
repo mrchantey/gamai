@@ -3,6 +3,12 @@ pub struct Tree<T> {
 	pub children: Vec<Tree<T>>,
 }
 
+
+impl<T> Into<Tree<T>> for (T, Vec<Tree<T>>) {
+	fn into(self) -> Tree<T> { Tree::<T>::new_with_children(self.0, self.1) }
+}
+
+
 impl<T> Tree<T> {
 	pub fn new(value: T) -> Self {
 		Self {
