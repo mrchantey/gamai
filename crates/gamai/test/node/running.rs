@@ -12,8 +12,8 @@ pub fn works() -> Result<()> {
 
 	let target = app.world.spawn_empty().id();
 
-	let action_graph = SuccessAction2::default().into_tree().into_graph();
-	action_graph.try_add_systems_to_default_schedule(&mut app);
+	let action_graph = SuccessAction::default().into_tree().into_graph();
+	action_graph.add_systems(&mut app);
 
 	let entity_graph = action_graph.spawn(&mut app.world, target);
 	let root = *entity_graph.root().unwrap();

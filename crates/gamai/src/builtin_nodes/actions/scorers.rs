@@ -3,7 +3,7 @@ use bevy_ecs::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 
-#[node(system=pass_scorer)]
+#[action(system=pass_scorer)]
 #[derive(Clone, Serialize, Deserialize, Component)]
 pub struct PassScorer {
 	pub score: Score,
@@ -19,7 +19,7 @@ pub fn pass_scorer(mut query: Query<&mut PassScorer, With<Running>>) {
 	}
 }
 
-#[node(system=fail_scorer)]
+#[action(system=fail_scorer)]
 #[derive(Default, Serialize, Deserialize, Clone, Component)]
 pub struct FailScorer {
 	pub score: Score,

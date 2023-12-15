@@ -6,7 +6,6 @@ use bevy_derive::DerefMut;
 use bevy_ecs::prelude::*;
 use bevy_ecs::schedule::ScheduleLabel;
 use petgraph::graph::DiGraph;
-use petgraph::graph::NodeIndex;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -33,12 +32,15 @@ pub struct ActionGraph(pub DiGraph<ActionList, ()>);
 
 impl Clone for ActionGraph {
 	fn clone(&self) -> Self {
-		let graph = map_graph(&self.0, |_, action_list| {
-			action_list
-				.into_iter()
-				.map(|action| action.duplicate())
-				.collect::<Vec<_>>()
-		});
+		let graph = self.map(
+			|_, action_list| {
+				action_list
+					.into_iter()
+					.map(|action| action.duplicate())
+					.collect::<Vec<_>>()
+			},
+			|_, _| (),
+		);
 		ActionGraph(graph)
 	}
 }
@@ -47,34 +49,23 @@ impl ActionGraph {
 	pub fn new() -> Self { Self::default() }
 
 	pub fn from_tree(root: impl Into<ActionTree>) -> Self {
-		let mut this = Self::new();
-		this.add_recursive(root.into());
-		this
-	}
-
-	pub fn add_recursive(&mut self, tree: ActionTree) -> NodeIndex {
-		let ActionTree { value, children } = tree;
-		let node = self.add_node(value);
-
-		for child in children {
-			let index = self.add_recursive(child);
-			self.add_edge(node, index, ());
-		}
-
-		node
+		Self(DiGraph::from_tree(root.into()))
 	}
 
 	pub fn spawn(&self, world: &mut World, target: Entity) -> EntityGraph {
 		// create entities & actions
-		let entity_graph = map_graph(&self.0, |_, actions| {
-			let mut entity =
-				world.spawn((TargetEntity(target), RunTimer::default()));
+		let entity_graph = self.map(
+			|_, actions| {
+				let mut entity =
+					world.spawn((TargetEntity(target), RunTimer::default()));
 
-			for action in actions.iter() {
-				action.spawn(&mut entity);
-			}
-			entity.id()
-		});
+				for action in actions.iter() {
+					action.spawn(&mut entity);
+				}
+				entity.id()
+			},
+			|_, _| (),
+		);
 
 		// create edges
 		for (index, entity) in Iterator::zip(
@@ -95,12 +86,13 @@ impl ActionGraph {
 		EntityGraph(entity_graph)
 	}
 
-	pub fn try_add_systems_to_default_schedule(&self, app: &mut App) {
-		self.try_add_systems(app, || {
+	/// Can be called multiple times without duplication of systems
+	pub fn add_systems(&self, app: &mut App) {
+		self.add_systems_to_schedule(app, || {
 			ActionSchedule::new(Update, PreTickSet, TickSet, PostTickSet)
 		})
 	}
-	pub fn try_add_systems<
+	pub fn add_systems_to_schedule<
 		Schedule: ScheduleLabel + Clone,
 		PreTickSet: SystemSet + Clone,
 		TickSet: SystemSet + Clone,
@@ -108,7 +100,7 @@ impl ActionGraph {
 	>(
 		&self,
 		app: &mut App,
-		init_tracker: impl Fn() -> ActionSchedule<
+		init_schedule: impl FnOnce() -> ActionSchedule<
 			Schedule,
 			PreTickSet,
 			TickSet,
@@ -122,7 +114,7 @@ impl ActionGraph {
 				TickSet,
 				PostTickSet,
 			>>() {
-			let tracker = init_tracker();
+			let tracker = init_schedule();
 
 			app.configure_sets(
 				tracker.schedule.clone(),
@@ -137,7 +129,7 @@ impl ActionGraph {
 				tracker
 					.post_tick_set
 					.clone()
-					.after(tracker.pre_tick_set.clone()),
+					.after(tracker.tick_set.clone()),
 			);
 
 			app.add_systems(
@@ -147,7 +139,7 @@ impl ActionGraph {
 					.before(tracker.post_tick_set.clone()),
 			);
 			app.add_systems(
-				Update,
+				tracker.schedule.clone(),
 				sync_running.in_set(tracker.post_tick_set.clone()),
 			);
 
@@ -162,7 +154,7 @@ impl ActionGraph {
 					)
 					.unwrap();
 
-				if action_schedule.try_add_action(action.as_ref()) {
+				if action_schedule.should_add_action(action.as_ref()) {
 					let schedule = action_schedule.schedule.clone();
 					let tick_set = action_schedule.tick_set.clone();
 					let post_tick_set = action_schedule.post_tick_set.clone();

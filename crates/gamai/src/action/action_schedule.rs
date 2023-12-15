@@ -1,10 +1,7 @@
 use crate::prelude::*;
-use bevy_app::App;
 use bevy_ecs::prelude::*;
 use bevy_ecs::schedule::ScheduleLabel;
 use bevy_utils::HashSet;
-use std::any::Any;
-use std::any::TypeId;
 
 #[derive(Resource)]
 pub struct ActionSchedule<
@@ -13,7 +10,7 @@ pub struct ActionSchedule<
 	TickSet: SystemSet + Clone,
 	PostTickSet: SystemSet + Clone,
 > {
-	pub added: HashSet<TypeId>,
+	pub added: HashSet<usize>,
 	pub schedule: Schedule,
 	pub pre_tick_set: PreTickSet,
 	pub tick_set: TickSet,
@@ -42,22 +39,11 @@ impl<
 		}
 	}
 
-	pub fn try_add_action(&mut self, action: &dyn Action) -> bool {
-		if self.added.contains(&action.type_id()) {
+	pub fn should_add_action(&mut self, action: &dyn Action) -> bool {
+		if self.added.contains(&action.meta().id) {
 			return false;
 		}
-		self.added.insert(action.type_id());
+		self.added.insert(action.meta().id);
 		true
-	}
-
-	pub fn add_action_systems(&self, app: &mut App, action: &dyn Action) {
-		app.add_systems(
-			self.schedule.clone(),
-			action.tick_system().in_set(self.tick_set.clone()),
-		);
-		app.add_systems(
-			self.schedule.clone(),
-			action.post_tick_system().in_set(self.post_tick_set.clone()),
-		);
 	}
 }

@@ -5,9 +5,6 @@ use bevy_ecs::schedule::SystemConfigs;
 use serde::Deserialize;
 use serde::Serialize;
 
-#[derive(Default, Clone, Serialize, Deserialize, Component)]
-#[node(system=sequence)]
-pub struct SequenceSelector;
 /// A node that runs all of its children in order until one fails.
 ///
 /// If a child succeeds it will run the next child.
@@ -15,6 +12,9 @@ pub struct SequenceSelector;
 /// If there are no more children to run it will succeed.
 ///
 /// If a child fails it will fail.
+#[derive(Default, Clone, Serialize, Deserialize, Component)]
+#[action(system=sequence)]
+pub struct SequenceSelector;
 pub fn sequence(
 	mut commands: Commands,
 	selectors: Query<(Entity, &SequenceSelector, &Edges), With<Running>>,

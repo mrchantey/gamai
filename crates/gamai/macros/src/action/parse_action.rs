@@ -2,6 +2,8 @@ use crate::utils::*;
 use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering;
 use syn::Expr;
 use syn::ItemStruct;
 use syn::Result;
@@ -49,6 +51,7 @@ fn action_trait(
 ) -> TokenStream {
 	let ident = &input.ident;
 
+	let meta = meta(input);
 	let spawn = spawn(input);
 	let tick_system = tick_system(args);
 	let post_tick_system = post_tick_system(input);
@@ -60,6 +63,7 @@ fn action_trait(
 			fn duplicate(&self) -> Box<dyn Action> {
 				Box::new(self.clone())
 			}
+			#meta
 
 			#spawn
 
@@ -67,6 +71,24 @@ fn action_trait(
 			#post_tick_system
 			#prop_listeners
 
+		}
+	}
+}
+
+static ACTION_ID: AtomicUsize = AtomicUsize::new(0);
+
+
+fn meta(input: &ItemStruct) -> TokenStream {
+	let ident = &input.ident;
+	let name = ident.to_string();
+	let action_id = ACTION_ID.fetch_add(1, Ordering::SeqCst);
+
+	quote! {
+		fn meta(&self) -> ActionMeta {
+			ActionMeta {
+				id: #action_id,
+				name: #name
+			}
 		}
 	}
 }

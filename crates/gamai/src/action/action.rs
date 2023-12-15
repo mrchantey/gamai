@@ -18,6 +18,8 @@ pub trait Action: 'static {
 	fn post_tick_system(&self) -> SystemConfigs;
 
 	fn prop_listeners(&self, entity: Entity) -> Vec<SetBevyProp>;
+
+	fn meta(&self) -> ActionMeta;
 }
 
 impl<T: Action> IntoTree<ActionList> for T {
@@ -25,10 +27,19 @@ impl<T: Action> IntoTree<ActionList> for T {
 	fn with_child(self, child: impl IntoTree<ActionList>) -> Tree<ActionList> {
 		self.into_tree().with_child(child)
 	}
+	fn with_leaf(self, child: ActionList) -> Tree<ActionList> {
+		self.into_tree().with_leaf(child)
+	}
 }
 
 pub type SetActionFunc = Box<dyn Fn(&mut EntityCommands) -> Result<()>>;
 
 pub trait SetAction: Action {
 	fn set(&mut self, func: SetActionFunc);
+}
+
+#[derive(Debug, Clone)]
+pub struct ActionMeta {
+	pub name: &'static str,
+	pub id: usize,
 }

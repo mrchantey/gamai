@@ -8,37 +8,50 @@ pub fn works() -> Result<()> {
 	let mut app = App::new();
 	let target = app.world.spawn_empty().id();
 
-	let node = UtilitySelector.into_node().with_children((
-		(FailScorer { score: Score::Fail }, SuccessAction),
-		(PassScorer::default(), SuccessAction),
-	));
+	let action_graph = UtilitySelector
+		.with_leaf(vec![
+			Box::new(FailScorer::default()),
+			Box::new(FailureAction),
+		])
+		.with_leaf(vec![
+			Box::new(PassScorer::default()),
+			Box::new(SuccessAction),
+		])
+		.into_graph();
 
-	node.add_systems(&mut app);
-	let root = node.spawn(&mut app.world, target).value;
+	action_graph.add_systems(&mut app);
+	let entity_graph = action_graph.spawn(&mut app.world, target);
 
 	app.update();
-	assert_nodes::<Running>(
-		root,
-		&app.world,
-		vec![(0, true), (1, false), (2, true)],
+	expect_tree(
+		&mut app,
+		&entity_graph,
+		Tree::new(Some(&Running))
+			.with_leaf(None)
+			.with_leaf(Some(&Running)),
 	)?;
 
 	app.update();
-	assert_nodes::<Running>(
-		root,
-		&app.world,
-		vec![(0, true), (1, false), (2, false)],
+	expect_tree(
+		&mut app,
+		&entity_graph,
+		Tree::new(Some(&Running)).with_leaf(None).with_leaf(None),
 	)?;
 
 	app.update();
-	assert_nodes::<Running>(
-		root,
-		&app.world,
-		vec![(0, false), (1, false), (2, false)],
+	expect_tree::<Running>(
+		&mut app,
+		&entity_graph,
+		Tree::new(None).with_leaf(None).with_leaf(None),
 	)?;
 
-	expect(ComponentGraph::<RunResult>::index(root, &app.world, 0))
-		.to_be(Some(&RunResult::Success))?;
+	expect_tree(
+		&mut app,
+		&entity_graph,
+		Tree::new(Some(&RunResult::Success))
+			.with_leaf(None)
+			.with_leaf(None),
+	)?;
 
 	Ok(())
 }

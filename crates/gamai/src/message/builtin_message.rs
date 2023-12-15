@@ -21,7 +21,7 @@ pub struct SetProp {
 
 pub enum BuiltinMessage {
 	SetUpdateSpeed(UpdateSpeed),
-	LoadTree(TypedNode<BuiltinNodes>),
+	// LoadTree(TypedNode<BuiltinNodes>),
 	SetProp(SetProp),
 }
 

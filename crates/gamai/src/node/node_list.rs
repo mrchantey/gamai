@@ -22,22 +22,22 @@ macro_rules! node_list {
 			$($variant($variant),)*
 		}
 
-		impl IntoNodeStruct for $name {
-			fn into_node_struct(&self) -> &dyn NodeStruct {
-				match self {
-					$(Self::$variant(x) => x,)*
-				}
-			}
-		}
+		// impl IntoNodeStruct for $name {
+		// 	fn into_node_struct(&self) -> &dyn NodeStruct {
+		// 		match self {
+		// 			$(Self::$variant(x) => x,)*
+		// 		}
+		// 	}
+		// }
 
-		impl NodeStructVariants for $name {
-			fn get_node_struct_variants() -> Vec<Box<dyn NodeStruct>> {
-				let mut vec = Vec::new();
-				$(
-					vec.extend($variant::get_node_struct_variants());
-				)*
-				vec
-				}
-		}
+		// impl NodeStructVariants for $name {
+		// 	fn get_node_struct_variants() -> Vec<Box<dyn NodeStruct>> {
+		// 		let mut vec = Vec::new();
+		// 		$(
+		// 			vec.extend($variant::get_node_struct_variants());
+		// 		)*
+		// 		vec
+		// 		}
+		// }
 	};
 }

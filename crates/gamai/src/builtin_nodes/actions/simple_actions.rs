@@ -4,29 +4,25 @@ use serde::Deserialize;
 use serde::Serialize;
 
 
-#[node(system=empty_action)]
-#[derive(Default, Clone, Component)]
+#[action(system=empty_action)]
+#[derive(Default, Clone, Component, Serialize, Deserialize)]
 pub struct EmptyAction;
 pub fn empty_action() {}
 
-#[node(system=success_action)]
+#[action(system=success_action)]
 #[derive(Default, Clone, Serialize, Deserialize, Component)]
 pub struct SuccessAction;
 
-#[action(system=success_action)]
-#[derive(Default, Clone, Serialize, Deserialize, Component)]
-pub struct SuccessAction2;
-
 pub fn success_action(
 	mut commands: Commands,
-	mut query: Query<Entity, (With<SuccessAction2>, With<Running>)>,
+	mut query: Query<Entity, (With<SuccessAction>, With<Running>)>,
 ) {
 	for entity in query.iter_mut() {
 		commands.entity(entity).insert(RunResult::Success);
 	}
 }
 
-#[node(system=failure_action)]
+#[action(system=failure_action)]
 #[derive(Default, Clone, Serialize, Deserialize, Component)]
 pub struct FailureAction;
 

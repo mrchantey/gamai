@@ -23,7 +23,7 @@ impl<'a, T: Debug> ComponentGraph<'a, T> {
 impl<'a, T: Component> ComponentGraph<'a, T> {
 	pub fn new(world: &'a World, entity_graph: &EntityGraph) -> Self {
 		let component_graph =
-			map_graph(entity_graph, |_, entity| world.get::<T>(*entity));
+			entity_graph.map(|_, entity| world.get::<T>(*entity), |_, _| ());
 		Self(component_graph)
 	}
 

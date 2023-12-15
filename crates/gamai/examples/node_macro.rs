@@ -4,7 +4,7 @@ use gamai::prelude::*;
 
 pub fn main() {}
 
-#[node(system=foo)]
+#[action(system=foo)]
 #[derive(Clone, Component)]
 pub struct Foo {
 	score: Score,

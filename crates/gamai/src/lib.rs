@@ -1,6 +1,7 @@
 pub mod action;
 pub mod builtin_nodes;
 pub mod edge;
+pub mod graph_utils;
 pub mod message;
 pub mod node;
 pub mod prop;
@@ -15,6 +16,7 @@ pub mod prelude {
 	pub use crate::builtin_nodes::selectors::*;
 	pub use crate::builtin_nodes::*;
 	pub use crate::edge::*;
+	pub use crate::graph_utils::*;
 	pub use crate::message::*;
 	pub use crate::node::*;
 	pub use crate::prop::*;

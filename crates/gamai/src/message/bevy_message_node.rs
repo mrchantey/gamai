@@ -55,7 +55,7 @@ impl BevyMessageNode {
 		for message in messages {
 			match message {
 				BuiltinMessage::SetUpdateSpeed(_) => todo!(),
-				BuiltinMessage::LoadTree(_) => todo!(),
+				// BuiltinMessage::LoadTree(_) => todo!(),
 				BuiltinMessage::SetProp(prop) => {
 					let func = self
 						.items

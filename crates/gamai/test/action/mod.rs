@@ -2,6 +2,8 @@ pub mod action;
 pub use self::action::*;
 pub mod component_graph;
 pub use self::component_graph::*;
+pub mod graph_ext;
+pub use self::graph_ext::*;
 pub mod serde;
 pub use self::serde::*;
 pub mod utils;

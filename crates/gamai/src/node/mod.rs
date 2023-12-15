@@ -1,5 +1,3 @@
-pub mod array_graph;
-pub use self::array_graph::*;
 pub mod component_graph;
 pub use self::component_graph::*;
 pub mod into_node;

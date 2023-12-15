@@ -54,7 +54,7 @@ pub fn sync_system() -> Result<()> {
 	let entities = actions.spawn(&mut app.world, target);
 	let entity = *entities.root().unwrap();
 
-	actions.try_add_systems_to_default_schedule(&mut app);
+	actions.add_systems(&mut app);
 	app.world
 		.entity_mut(entity)
 		.insert(TestAction::new(Score::Pass));

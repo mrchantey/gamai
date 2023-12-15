@@ -6,7 +6,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 #[derive(Default, Clone, Serialize, Deserialize, Component)]
-#[node(system=utility_selector)]
+#[action(system=utility_selector)]
 pub struct UtilitySelector;
 
 pub fn utility_selector(

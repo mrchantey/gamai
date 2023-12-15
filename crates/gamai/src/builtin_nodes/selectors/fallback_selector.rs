@@ -5,14 +5,14 @@ use bevy_ecs::schedule::SystemConfigs;
 use serde::Deserialize;
 use serde::Serialize;
 
-#[derive(Default, Clone, Serialize, Deserialize, Component)]
-#[node(system=fallback)]
-pub struct FallbackSelector;
 /// A node that runs all of its children in order until one succeeds.
 ///
 /// If a child succeeds it will succeed.
 ///
 /// If the last child fails it will fail.
+#[derive(Default, Clone, Serialize, Deserialize, Component)]
+#[action(system=fallback)]
+pub struct FallbackSelector;
 pub fn fallback(
 	mut commands: Commands,
 	selectors: Query<(Entity, &FallbackSelector, &Edges), With<Running>>,
@@ -23,6 +23,7 @@ pub fn fallback(
 		if any_child_running(children, &children_running) {
 			continue;
 		}
+
 		match first_child_result(children, &children_results) {
 			Some((index, result)) => match result {
 				&RunResult::Success => {

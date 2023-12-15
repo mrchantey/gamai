@@ -1,17 +1,20 @@
 use anyhow::Result;
+use bevy_app::App;
 use bevy_ecs::prelude::*;
-use gamai::node::ComponentGraph;
 use gamai::prelude::*;
 use sweet::*;
 
-pub fn assert_nodes<T: Component>(
-	entity: Entity,
-	world: &World,
-	vals: Vec<(usize, bool)>,
-) -> Result<()> {
-	for (i, v) in vals.iter() {
-		expect(ComponentGraph::<Running>::index(entity, world, *i))
-			.to_be_option(*v)?;
-	}
-	Ok(())
+
+pub fn expect_tree<T>(
+	app: &mut App,
+	entity_graph: &EntityGraph,
+	expected: Tree<Option<&T>>,
+) -> Result<()>
+where
+	T: Component + PartialEq + std::fmt::Debug,
+{
+	let running_tree = ComponentGraph::<T>::new(&app.world, &entity_graph)
+		.clone()
+		.into_tree();
+	expect(running_tree).to_be(expected)
 }
