@@ -1,14 +1,23 @@
-mod node;
-use node::*;
 mod action;
 use action::*;
 use proc_macro::TokenStream;
 mod utils;
 // pub(crate) use utils::*;
 
-/// Annotate a struct as a node, defining its corresponding system.
+
+
+
+/// Used for selectors aka non-leaf nodes.
+/// Define props required for each child. Children should only be added to this
+/// node if they have all the required props.
+#[proc_macro_attribute]
+pub fn child_props(_attr: TokenStream, _item: TokenStream) -> TokenStream {
+	todo!()
+}
+
+/// Annotate a struct as an action, defining its corresponding system.
 ///
-/// A node treats each field as a [`Prop`] which is a supertrait of [`Component, Clone`]
+/// An action struct treats each field as a [`Prop`] which is a supertrait of [`Component, Clone`]
 /// and only one of each type is allowed. This pattern allows all node systems to be run in parallel
 /// and their props to be efficiently synced later.
 ///
@@ -16,7 +25,7 @@ mod utils;
 ///
 /// // a similar thing can be done for `AlwaysSuccceed`
 ///
-/// #[node(always_pass)]
+/// #[action(always_pass)]
 /// struct AlwaysPass{
 ///   score: Score,
 /// }
@@ -41,23 +50,6 @@ mod utils;
 /// }
 /// ```
 ///
-#[proc_macro_attribute]
-pub fn node(attr: TokenStream, item: TokenStream) -> TokenStream {
-	parse_node(attr, item)
-	.unwrap_or_else(syn::Error::into_compile_error)
-	.into()
-}
-
-
-/// Used for selectors aka non-leaf nodes.
-/// Define props required for each child. Children should only be added to this
-/// node if they have all the required props.
-#[proc_macro_attribute]
-pub fn child_props(_attr: TokenStream, _item: TokenStream) -> TokenStream {
-	todo!()
-}
-
-
 #[proc_macro_attribute]
 pub fn action(attr: TokenStream, item: TokenStream) -> TokenStream {
 	parse_action(attr, item)

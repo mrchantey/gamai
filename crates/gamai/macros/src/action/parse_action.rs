@@ -55,7 +55,6 @@ fn action_trait(
 	let spawn = spawn(input);
 	let tick_system = tick_system(args);
 	let post_tick_system = post_tick_system(input);
-	let prop_listeners = prop_listeners(input);
 
 	quote! {
 		#[typetag::serde]
@@ -69,8 +68,6 @@ fn action_trait(
 
 			#tick_system
 			#post_tick_system
-			#prop_listeners
-
 		}
 	}
 }
@@ -168,35 +165,6 @@ fn spawn(input: &ItemStruct) -> TokenStream {
 		fn spawn_with_command(&self, entity: &mut EntityCommands) {
 			entity.insert(self.clone());
 			#insert_props
-		}
-	}
-}
-
-fn prop_listeners(input: &ItemStruct) -> TokenStream {
-	let ident = &input.ident;
-
-	let prop_changed = input
-		.fields
-		.iter()
-		.map(|field| {
-			let field_ident = &field.ident;
-			let ty = &field.ty;
-			quote!(Box::new(move |app,value|{
-					let mut entity = app.world.entity_mut(entity);
-					let mut node = entity.get_mut::<#ident>().unwrap();
-
-					let value = serde_json::from_str::<#ty>(&value)?;
-					node.#field_ident = value;
-					Ok(())
-				}),
-			)
-		})
-		.collect::<TokenStream>();
-
-
-	quote! {
-		fn prop_listeners(&self, entity: Entity) -> Vec<SetBevyProp>{
-			vec![#prop_changed]
 		}
 	}
 }

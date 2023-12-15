@@ -12,17 +12,10 @@ pub enum UpdateSpeed {
 	Paused,
 }
 
-
-pub struct SetProp {
-	pub index: usize,
-	pub value: String,
-}
-
-
 pub enum BuiltinMessage {
 	SetUpdateSpeed(UpdateSpeed),
 	// LoadTree(TypedNode<BuiltinNodes>),
-	SetProp(SetProp),
+	SetAction(SetActionMessage),
 }
 
 
