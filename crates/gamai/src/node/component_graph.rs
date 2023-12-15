@@ -9,10 +9,9 @@ use std::fmt::Debug;
 
 
 #[derive(Debug, Clone, Deref, DerefMut)]
-pub struct NodeGraph<'a, T>(pub DiGraph<Option<&'a T>, ()>);
+pub struct ComponentGraph<'a, T>(pub DiGraph<Option<&'a T>, ()>);
 
-
-impl<'a, T: Debug> NodeGraph<'a, T> {
+impl<'a, T: Debug> ComponentGraph<'a, T> {
 	pub fn print_tree(&self) {
 		// println!("{:?}", self);
 		for node in self.0.node_indices() {
@@ -22,7 +21,7 @@ impl<'a, T: Debug> NodeGraph<'a, T> {
 }
 
 
-impl<'a, T: Component> NodeGraph<'a, T> {
+impl<'a, T: Component> ComponentGraph<'a, T> {
 	pub fn new(entity: Entity, world: &'a World) -> Self {
 		let mut this = Self(DiGraph::default());
 		this.add_recursive(entity, world);
@@ -34,7 +33,7 @@ impl<'a, T: Component> NodeGraph<'a, T> {
 		world: &'a World,
 		index: usize,
 	) -> Option<&'a T> {
-		NodeGraph::<T>::new(entity, world)
+		ComponentGraph::<T>::new(entity, world)
 			.node_weight(NodeIndex::new(index))
 			.unwrap()
 			.as_ref()

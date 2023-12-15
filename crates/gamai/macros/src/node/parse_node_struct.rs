@@ -16,7 +16,7 @@ pub fn parse_node_struct(
 	let struct_insert = parse_struct_insert(input);
 	let pre_sync_system = pre_sync_system(input);
 	let post_sync_system = post_sync_system(input);
-	let node_system = parse_node_system(args)?;
+	let node_system = node_system(args)?;
 
 	Ok(quote! {
 		impl NodeStruct for #ident{
@@ -115,7 +115,7 @@ fn pre_sync_system(input: &ItemStruct) -> TokenStream {
 		})
 		.collect::<TokenStream>();
 
-		let prop_types = input
+	let prop_types = input
 		.fields
 		.iter()
 		.map(|field| {
@@ -155,11 +155,7 @@ fn pre_sync_system(input: &ItemStruct) -> TokenStream {
 	}
 }
 
-
-
-fn parse_node_system(
-	args: &HashMap<String, Option<Expr>>,
-) -> Result<TokenStream> {
+fn node_system(args: &HashMap<String, Option<Expr>>) -> Result<TokenStream> {
 	let system_ident = args
 		.get("system")
 		.ok_or_else(|| {

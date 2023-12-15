@@ -1,5 +1,7 @@
-pub mod graph;
-pub use self::graph::*;
+pub mod array_graph;
+pub use self::array_graph::*;
+pub mod component_graph;
+pub use self::component_graph::*;
 pub mod into_node;
 pub use self::into_node::*;
 pub mod node;

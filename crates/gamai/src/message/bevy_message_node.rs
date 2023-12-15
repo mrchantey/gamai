@@ -8,20 +8,30 @@ use serde::de::DeserializeOwned;
 
 // fn foo(query:Query<Entity,Or Changed<Foo>>)
 
-type SetProp = Box<dyn Fn(&mut App, String) -> Result<()>>;
+pub type SetBevyProp = Box<dyn Fn(&mut App, String) -> Result<()>>;
 
-pub struct BevyMessageService {
-	prop_listeners: Vec<SetProp>,
+
+pub trait BevyMessageListener {
+	fn get_listeners(&self, entity: Entity) -> Vec<SetBevyProp>;
 }
 
-impl BevyMessageService {
-	pub fn new() -> Self {
-		Self {
-			prop_listeners: Vec::new(),
-		}
+
+pub type BevyMessageNode = ArrayGraph<SetBevyProp>;
+
+impl BevyMessageNode {
+	// pub fn from_node(node: Node, tree: Tree<Entity>) -> Self {
+	// 	let this = Self::new();
+	// 	// this.items = node.items.into_iter().map(|x| x).collect();
+	// 	this
+	// }
+
+
+	pub fn add_prop_listener(&mut self, listener: SetBevyProp) -> usize {
+		self.items.push(listener);
+		self.items.len() - 1
 	}
 
-	pub fn add_prop_listener<T: Component + DeserializeOwned>(
+	pub fn add_prop_listener_raw<T: Component + DeserializeOwned>(
 		&mut self,
 		entity: Entity,
 	) -> usize {
@@ -33,8 +43,8 @@ impl BevyMessageService {
 				.insert(value);
 			Ok(())
 		});
-		self.prop_listeners.push(listener);
-		self.prop_listeners.len() - 1
+		self.items.push(listener);
+		self.items.len() - 1
 	}
 
 	pub fn apply_messages(
@@ -48,7 +58,7 @@ impl BevyMessageService {
 				BuiltinMessage::LoadTree(_) => todo!(),
 				BuiltinMessage::SetProp(prop) => {
 					let func = self
-						.prop_listeners
+						.items
 						.get(prop.index)
 						.ok_or(anyhow!("Prop index out of bounds"))?;
 					func(app, prop.value)?;

@@ -34,12 +34,12 @@ pub fn works() -> Result<()> {
 	let b = a.into_node();
 	let mut app = App::new();
 	let target = app.world.spawn_empty().id();
-	let root = b.spawn(&mut app.world, target);
+	let root = b.spawn(&mut app.world, target).value;
 
-	expect(NodeGraph::<Score>::index(root, &app.world, 0)).to_be_none()?;
-	expect(NodeGraph::<Score>::index(root, &app.world, 1))
+	expect(ComponentGraph::<Score>::index(root, &app.world, 0)).to_be_none()?;
+	expect(ComponentGraph::<Score>::index(root, &app.world, 1))
 		.to_be(Some(&Score::Fail))?;
-	expect(NodeGraph::<Score>::index(root, &app.world, 2))
+	expect(ComponentGraph::<Score>::index(root, &app.world, 2))
 		.to_be(Some(&Score::Pass))?;
 
 	Ok(())

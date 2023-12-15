@@ -2,6 +2,7 @@ use crate::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 
+/// A version of graphs that can be serialized and deserialized.
 #[derive(Serialize, Deserialize)]
 pub struct TypedNode<T: NodeStruct> {
 	pub items: Vec<T>,
@@ -30,4 +31,3 @@ impl<T: NodeStruct> IntoNode for TypedNode<T> {
 		}
 	}
 }
-

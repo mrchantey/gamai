@@ -15,7 +15,7 @@ pub fn works() -> Result<()> {
 	let node = SuccessAction::default().into_node();
 	node.add_systems(&mut app);
 
-	let root = node.spawn(&mut app.world, target);
+	let root = node.spawn(&mut app.world, target).value;
 
 	expect(&app).to_have_component::<Running>(root)?;
 	// add `RunResult`, remove `Running`

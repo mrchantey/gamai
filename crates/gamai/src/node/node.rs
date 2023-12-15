@@ -18,11 +18,7 @@ pub struct TickSet;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
 pub struct PostTickSet;
 
-
-pub struct Node {
-	pub items: Vec<Box<dyn NodeStruct>>,
-	pub children: Vec<Node>,
-}
+pub type Node = ArrayGraph<Box<dyn NodeStruct>>;
 
 impl Node {
 	pub fn with_children(mut self, children: impl IntoNodes) -> Self {
@@ -32,16 +28,20 @@ impl Node {
 
 	/// Spawn a node graph for the given target entity.
 	/// The [`Running`] component is added to the root.
-	pub fn spawn(&self, world: &mut World, target: Entity) -> Entity {
-		let root = self.spawn_graph(world, target);
-		world.entity_mut(root).insert(Running);
-		root
+	pub fn spawn(&self, world: &mut World, target: Entity) -> Tree<Entity> {
+		let tree = self.spawn_graph(world, target);
+		world.entity_mut(tree.value).insert(Running);
+		tree
 	}
 
 	/// Spawn a node graph for the given target entity.
 	/// No additional components are added.
-	pub fn spawn_graph(&self, world: &mut World, target: Entity) -> Entity {
-		let edges = self
+	pub fn spawn_graph(
+		&self,
+		world: &mut World,
+		target: Entity,
+	) -> Tree<Entity> {
+		let children = self
 			.children
 			.iter()
 			.map(|child| child.spawn_graph(world, target))
@@ -50,15 +50,17 @@ impl Node {
 		let mut entity =
 			world.spawn((TargetEntity(target), RunTimer::default()));
 
-		if edges.len() > 0 {
-			entity.insert(Edges(edges));
+		if children.len() > 0 {
+			entity.insert(Edges(
+				children.iter().map(|child| child.value).collect(),
+			));
 		}
 
 		for node_struct in self.items.iter() {
 			node_struct.init(&mut entity);
 		}
 
-		entity.id()
+		Tree::new_with_children(entity.id(), children)
 	}
 
 	pub fn add_systems(&self, app: &mut App) {

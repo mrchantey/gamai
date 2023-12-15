@@ -29,9 +29,9 @@ pub fn works() -> Result<()> {
 
 	let node = Foo::default().into_node();
 	node.add_systems(&mut app);
-	let node_entity = node.spawn_graph(&mut app.world, target);
+	let root = node.spawn_graph(&mut app.world, target).value;
 	expect(&app)
-		.component(node_entity)?
+		.component(root)?
 		.to_be(&TargetEntity(target))?;
 
 	Ok(())
@@ -45,7 +45,7 @@ pub fn sync_system() -> Result<()> {
 
 	let node = Foo { score: Score::Fail }.into_node();
 	node.add_systems(&mut app);
-	let root = node.spawn_graph(&mut app.world, target);
+	let root = node.spawn_graph(&mut app.world, target).value;
 	app.world
 		.entity_mut(root)
 		.insert(Foo { score: Score::Pass });

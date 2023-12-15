@@ -14,7 +14,7 @@ pub fn works() -> Result<()> {
 	));
 
 	node.add_systems(&mut app);
-	let root = node.spawn(&mut app.world, target);
+	let root = node.spawn(&mut app.world, target).value;
 
 	app.update();
 	assert_nodes::<Running>(
@@ -37,7 +37,7 @@ pub fn works() -> Result<()> {
 		vec![(0, false), (1, false), (2, false)],
 	)?;
 
-	expect(NodeGraph::<RunResult>::index(root, &app.world, 0))
+	expect(ComponentGraph::<RunResult>::index(root, &app.world, 0))
 		.to_be(Some(&RunResult::Success))?;
 
 	Ok(())

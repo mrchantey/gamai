@@ -2,7 +2,7 @@ use bevy_derive::Deref;
 use bevy_derive::DerefMut;
 use bevy_ecs::prelude::*;
 
-#[derive(Component, Deref, DerefMut)]
+#[derive(Debug, Default, Clone, Deref, DerefMut, Component)]
 pub struct Edges(pub Vec<Entity>);
 
 

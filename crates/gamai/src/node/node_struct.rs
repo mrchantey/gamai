@@ -1,8 +1,9 @@
+use crate::prelude::*;
 use bevy_ecs::schedule::SystemConfigs;
 use bevy_ecs::system::EntityCommands;
 use bevy_ecs::world::EntityWorldMut;
 
-pub trait NodeStruct: 'static + NodeStructMeta {
+pub trait NodeStruct: 'static + NodeStructMeta + BevyMessageListener {
 	fn init(&self, entity: &mut EntityWorldMut<'_>);
 	fn init_from_command(&self, entity: &mut EntityCommands);
 	fn get_pre_sync_system(&self) -> SystemConfigs;
@@ -34,6 +35,14 @@ impl<T: 'static + IntoNodeStruct> NodeStruct for T {
 	}
 }
 
+impl<T: 'static + IntoNodeStruct> BevyMessageListener for T {
+	fn get_listeners(
+		&self,
+		entity: bevy_ecs::entity::Entity,
+	) -> Vec<SetBevyProp> {
+		self.into_node_struct().get_listeners(entity)
+	}
+}
 impl<T: 'static + IntoNodeStruct> NodeStructMeta for T {
 	fn name(&self) -> &'static str { self.into_node_struct().name() }
 }
