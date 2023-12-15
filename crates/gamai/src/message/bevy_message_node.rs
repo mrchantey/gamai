@@ -8,8 +8,8 @@ use serde::de::DeserializeOwned;
 
 // fn foo(query:Query<Entity,Or Changed<Foo>>)
 
+// TODO change from string to Action
 pub type SetBevyProp = Box<dyn Fn(&mut App, String) -> Result<()>>;
-
 
 pub trait BevyMessageListener {
 	fn get_listeners(&self, entity: Entity) -> Vec<SetBevyProp>;

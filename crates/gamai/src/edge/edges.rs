@@ -2,6 +2,8 @@ use bevy_derive::Deref;
 use bevy_derive::DerefMut;
 use bevy_ecs::prelude::*;
 
+
+/// Outgoing edges of an action, aka Children.
 #[derive(Debug, Default, Clone, Deref, DerefMut, Component)]
 pub struct Edges(pub Vec<Entity>);
 

@@ -1,3 +1,7 @@
+use petgraph::graph::DiGraph;
+use petgraph::graph::NodeIndex;
+
+
 pub struct Tree<T> {
 	pub value: T,
 	pub children: Vec<Tree<T>>,
@@ -47,3 +51,60 @@ impl<T> ArrayGraph<T> {
 		items
 	}
 }
+// TODO edge map fn
+pub fn map_graph<TypeA, TypeB, F>(
+	graph_a: &DiGraph<TypeA, ()>,
+	mut map_fn: F,
+) -> DiGraph<TypeB, ()>
+where
+	F: FnMut(NodeIndex, &TypeA) -> TypeB,
+{
+	let mut graph_out = DiGraph::<TypeB, ()>::new();
+
+	// Map nodes
+	let nodes: Vec<NodeIndex> = graph_a
+		.node_indices()
+		.map(|node_index| {
+			let node_a = &graph_a[node_index];
+			graph_out.add_node(map_fn(node_index, node_a))
+		})
+		.collect();
+
+	// Map edges
+	for edge in graph_a.edge_indices() {
+		let (source, target) = graph_a.edge_endpoints(edge).unwrap();
+		let source_index = nodes[source.index()];
+		let target_index = nodes[target.index()];
+		graph_out.add_edge(source_index, target_index, ());
+	}
+
+	graph_out
+}
+// pub fn map_graphs<TypeA, TypeB, F>(
+// 	graphs: Vec<&DiGraph<TypeA, ()>>,
+// 	mut map_fn: F,
+// ) -> DiGraph<TypeB, ()>
+// where
+// 	F: FnMut(&TypeA) -> TypeB,
+// {
+// 	let mut graph_out = DiGraph::<TypeB, ()>::new();
+
+// 	// Map nodes
+// 	let nodes: Vec<NodeIndex> = graphs[0]
+// 		.node_indices()
+// 		.map(|node_index| {
+// 			let node_a = &graph_a[node_index];
+// 			graph_out.add_node(map_fn(node_a))
+// 		})
+// 		.collect();
+
+// 	// Map edges
+// 	for edge in graph_a.edge_indices() {
+// 		let (source, target) = graph_a.edge_endpoints(edge).unwrap();
+// 		let source_index = nodes[source.index()];
+// 		let target_index = nodes[target.index()];
+// 		graph_out.add_edge(source_index, target_index, ());
+// 	}
+
+// 	graph_out
+// }
