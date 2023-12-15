@@ -15,13 +15,31 @@ pub fn parse_action(
 	let args = &attributes_map(attr.into(), Some(&["system"]))?;
 
 	let action_trait = action_trait(input, args);
+	let into = into(input);
 
 	Ok(quote! {
 		use gamai::prelude::*;
 		use gamai::exports::*;
 		#input
 		#action_trait
+		#into
 	})
+}
+
+fn into(input: &ItemStruct) -> TokenStream {
+	let _ident = &input.ident;
+	quote! {
+		// impl Into<Box<dyn Action>> for #ident {
+		// 	fn into(self) -> Box<dyn Action> {
+		// 		Box::new(self)
+		// 	}
+		// }
+		// impl Into<ActionTree> for #ident {
+		// 	fn into(self) -> ActionTree {
+		// 		ActionTree::new(vec![Box::new(self)])
+		// 	}
+		// }
+	}
 }
 
 

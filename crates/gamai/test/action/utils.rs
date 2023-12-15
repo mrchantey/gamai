@@ -2,20 +2,31 @@ use bevy_ecs::prelude::*;
 use gamai::prelude::*;
 
 
-#[action(system=my_action)]
+#[action(system=test_action)]
 #[derive(Default, Clone, Component, Serialize, Deserialize)]
-pub struct MyAction {
+pub struct TestAction {
 	pub score: Score,
 }
-impl MyAction {
+impl TestAction {
 	pub fn new(score: Score) -> Self { Self { score } }
 }
 
-fn my_action() {}
+fn test_action() {}
 
 
-pub fn my_action_single_parent() -> ActionGraph {
-	ActionTree::from_action(MyAction::default())
-		.with_child(ActionTree::from_action(MyAction::default()))
+///
+/// Root
+/// 	Child0
+/// 	Child1
+/// 		Child0
+///
+pub fn test_action_graph() -> ActionGraph {
+	TestAction::default()
+		.with_child(TestAction::default())
+		.with_child(
+			TestAction::default()
+				.into_tree()
+				.with_child(TestAction::default()),
+		)
 		.into_graph()
 }

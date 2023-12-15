@@ -13,9 +13,13 @@ pub fn empty_action() {}
 #[derive(Default, Clone, Serialize, Deserialize, Component)]
 pub struct SuccessAction;
 
+#[action(system=success_action)]
+#[derive(Default, Clone, Serialize, Deserialize, Component)]
+pub struct SuccessAction2;
+
 pub fn success_action(
 	mut commands: Commands,
-	mut query: Query<Entity, (With<SuccessAction>, With<Running>)>,
+	mut query: Query<Entity, (With<SuccessAction2>, With<Running>)>,
 ) {
 	for entity in query.iter_mut() {
 		commands.entity(entity).insert(RunResult::Success);

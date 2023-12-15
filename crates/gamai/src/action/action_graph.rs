@@ -1,9 +1,10 @@
 use crate::prelude::*;
-use anyhow::anyhow;
-use anyhow::Result;
+use bevy_app::App;
+use bevy_app::Update;
 use bevy_derive::Deref;
 use bevy_derive::DerefMut;
 use bevy_ecs::prelude::*;
+use bevy_ecs::schedule::ScheduleLabel;
 use petgraph::graph::DiGraph;
 use petgraph::graph::NodeIndex;
 use serde::Deserialize;
@@ -12,16 +13,17 @@ use serde::Serialize;
 pub type ActionList = Vec<Box<dyn Action>>;
 pub type ActionTree = Tree<ActionList>;
 
+impl Into<ActionTree> for Box<dyn Action> {
+	fn into(self) -> ActionTree { ActionTree::new(vec![self]) }
+}
+
+
 impl ActionTree {
 	pub fn from_action(value: impl Action) -> Self {
 		Self {
 			value: vec![Box::new(value)],
 			children: vec![],
 		}
-	}
-	pub fn with_child(mut self, child: Self) -> Self {
-		self.children.push(child);
-		self
 	}
 	pub fn into_graph(self) -> ActionGraph { ActionGraph::from_tree(self) }
 }
@@ -86,43 +88,94 @@ impl ActionGraph {
 			world.entity_mut(*entity).insert(Edges(children));
 		}
 
+		world
+			.entity_mut(*entity_graph.root().unwrap())
+			.insert(Running);
+
 		EntityGraph(entity_graph)
 	}
-}
 
-#[derive(Debug, Clone, Deref, DerefMut)]
-pub struct EntityGraph(pub DiGraph<Entity, ()>);
-
-impl EntityGraph {
-	pub fn set_action(
-		&self,
-		world: &mut World,
-		message: &SetActionMessage,
-	) -> Result<()> {
-		let mut entity = self
-			.0
-			.node_weight(NodeIndex::new(*message.index))
-			.map(|entity| world.entity_mut(*entity))
-			.ok_or_else(|| anyhow!("Node not found: {}", *message.index))?;
-
-		message.value.spawn(&mut entity);
-		Ok(())
+	pub fn try_add_systems_to_default_schedule(&self, app: &mut App) {
+		self.try_add_systems(app, || {
+			ActionSchedule::new(Update, PreTickSet, TickSet, PostTickSet)
+		})
 	}
-	pub fn set_action_with_command(
+	pub fn try_add_systems<
+		Schedule: ScheduleLabel + Clone,
+		PreTickSet: SystemSet + Clone,
+		TickSet: SystemSet + Clone,
+		PostTickSet: SystemSet + Clone,
+	>(
 		&self,
-		commands: &mut Commands,
-		message: &SetActionMessage,
-	) -> Result<()> {
-		let entity = self
-			.0
-			.node_weight(NodeIndex::new(*message.index))
-			.ok_or_else(|| anyhow!("Node not found: {}", *message.index))?;
+		app: &mut App,
+		init_tracker: impl Fn() -> ActionSchedule<
+			Schedule,
+			PreTickSet,
+			TickSet,
+			PostTickSet,
+		>,
+	) {
+		if false
+			== app.world.contains_resource::<ActionSchedule<
+				Schedule,
+				PreTickSet,
+				TickSet,
+				PostTickSet,
+			>>() {
+			let tracker = init_tracker();
 
-		let mut entity = commands
-			.get_entity(*entity)
-			.ok_or_else(|| anyhow!("Entity not found: {}", *message.index))?;
+			app.configure_sets(
+				tracker.schedule.clone(),
+				tracker.pre_tick_set.clone(),
+			);
+			app.configure_sets(
+				tracker.schedule.clone(),
+				tracker.tick_set.clone().after(tracker.pre_tick_set.clone()),
+			);
+			app.configure_sets(
+				tracker.schedule.clone(),
+				tracker
+					.post_tick_set
+					.clone()
+					.after(tracker.pre_tick_set.clone()),
+			);
 
-		message.value.spawn_with_command(&mut entity);
-		Ok(())
+			app.add_systems(
+				tracker.schedule.clone(),
+				apply_deferred
+					.after(tracker.tick_set.clone())
+					.before(tracker.post_tick_set.clone()),
+			);
+			app.add_systems(
+				Update,
+				sync_running.in_set(tracker.post_tick_set.clone()),
+			);
+
+			app.world.insert_resource(tracker);
+		}
+
+		for actions in self.node_weights() {
+			for action in actions {
+				let mut action_schedule = app
+					.world
+					.get_resource_mut::<ActionSchedule<Schedule, PreTickSet, TickSet, PostTickSet>>(
+					)
+					.unwrap();
+
+				if action_schedule.try_add_action(action.as_ref()) {
+					let schedule = action_schedule.schedule.clone();
+					let tick_set = action_schedule.tick_set.clone();
+					let post_tick_set = action_schedule.post_tick_set.clone();
+					app.add_systems(
+						schedule.clone(),
+						action.tick_system().in_set(tick_set),
+					);
+					app.add_systems(
+						schedule,
+						action.post_tick_system().in_set(post_tick_set),
+					);
+				}
+			}
+		}
 	}
 }

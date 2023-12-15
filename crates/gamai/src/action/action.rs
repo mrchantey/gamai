@@ -20,6 +20,13 @@ pub trait Action: 'static {
 	fn prop_listeners(&self, entity: Entity) -> Vec<SetBevyProp>;
 }
 
+impl<T: Action> IntoTree<ActionList> for T {
+	fn into_tree(self) -> Tree<ActionList> { Tree::new(vec![Box::new(self)]) }
+	fn with_child(self, child: impl IntoTree<ActionList>) -> Tree<ActionList> {
+		self.into_tree().with_child(child)
+	}
+}
+
 pub type SetActionFunc = Box<dyn Fn(&mut EntityCommands) -> Result<()>>;
 
 pub trait SetAction: Action {

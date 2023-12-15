@@ -1,17 +1,29 @@
+use extend::ext;
 use petgraph::graph::DiGraph;
 use petgraph::graph::NodeIndex;
 
+
+pub trait IntoTree<T> {
+	fn into_tree(self) -> Tree<T>;
+	fn with_child(self, child: impl IntoTree<T>) -> Tree<T>;
+}
 
 pub struct Tree<T> {
 	pub value: T,
 	pub children: Vec<Tree<T>>,
 }
 
+impl<T> IntoTree<T> for Tree<T> {
+	fn into_tree(self) -> Tree<T> { self }
+	fn with_child(mut self, child: impl IntoTree<T>) -> Tree<T> {
+		self.children.push(child.into_tree());
+		self
+	}
+}
 
 impl<T> Into<Tree<T>> for (T, Vec<Tree<T>>) {
 	fn into(self) -> Tree<T> { Tree::<T>::new_with_children(self.0, self.1) }
 }
-
 
 impl<T> Tree<T> {
 	pub fn new(value: T) -> Self {
@@ -20,7 +32,11 @@ impl<T> Tree<T> {
 			children: Vec::new(),
 		}
 	}
-	pub fn new_with_children(value: T, children: Vec<Tree<T>>) -> Self {
+	pub fn with_child(mut self, child: impl IntoTree<T>) -> Self {
+		self.children.push(child.into_tree());
+		self
+	}
+	pub fn new_with_children(value: T, children: Vec<Self>) -> Self {
 		Self { value, children }
 	}
 }
@@ -80,6 +96,17 @@ where
 
 	graph_out
 }
+
+
+#[ext]
+pub impl<N, E> DiGraph<N, E> {
+	fn root(&self) -> Option<&N> { self.node_weight(NodeIndex::new(0)) }
+	fn node(&self, index: usize) -> Option<&N> {
+		self.node_weight(NodeIndex::new(index))
+	}
+}
+
+
 // pub fn map_graphs<TypeA, TypeB, F>(
 // 	graphs: Vec<&DiGraph<TypeA, ()>>,
 // 	mut map_fn: F,

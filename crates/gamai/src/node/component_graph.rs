@@ -13,7 +13,6 @@ pub struct ComponentGraph<'a, T>(pub DiGraph<Option<&'a T>, ()>);
 
 impl<'a, T: Debug> ComponentGraph<'a, T> {
 	pub fn print_tree(&self) {
-		// println!("{:?}", self);
 		for node in self.0.node_indices() {
 			println!("{:?}", self.0.node_weight(node));
 		}
@@ -22,24 +21,17 @@ impl<'a, T: Debug> ComponentGraph<'a, T> {
 
 
 impl<'a, T: Component> ComponentGraph<'a, T> {
-	pub fn new(entity: Entity, world: &'a World) -> Self {
+	pub fn new(world: &'a World, entity_graph: &EntityGraph) -> Self {
+		let component_graph =
+			map_graph(entity_graph, |_, entity| world.get::<T>(*entity));
+		Self(component_graph)
+	}
+
+	pub fn from_edges(entity: Entity, world: &'a World) -> Self {
 		let mut this = Self(DiGraph::default());
 		this.add_recursive(entity, world);
 		this
 	}
-
-	pub fn index(
-		entity: Entity,
-		world: &'a World,
-		index: usize,
-	) -> Option<&'a T> {
-		ComponentGraph::<T>::new(entity, world)
-			.node_weight(NodeIndex::new(index))
-			.unwrap()
-			.as_ref()
-			.copied()
-	}
-
 	fn add_recursive(&mut self, entity: Entity, world: &'a World) -> NodeIndex {
 		let value = world.get::<T>(entity);
 		let node_index = self.add_node(value);
@@ -50,5 +42,18 @@ impl<'a, T: Component> ComponentGraph<'a, T> {
 			}
 		}
 		node_index
+	}
+
+	//eww, deprecate
+	pub fn index(
+		entity: Entity,
+		world: &'a World,
+		index: usize,
+	) -> Option<&'a T> {
+		ComponentGraph::<T>::from_edges(entity, world)
+			.node_weight(NodeIndex::new(index))
+			.unwrap()
+			.as_ref()
+			.copied()
 	}
 }

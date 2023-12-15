@@ -12,10 +12,11 @@ pub fn works() -> Result<()> {
 
 	let target = app.world.spawn_empty().id();
 
-	let node = SuccessAction::default().into_node();
-	node.add_systems(&mut app);
+	let action_graph = SuccessAction2::default().into_tree().into_graph();
+	action_graph.try_add_systems_to_default_schedule(&mut app);
 
-	let root = node.spawn(&mut app.world, target).value;
+	let entity_graph = action_graph.spawn(&mut app.world, target);
+	let root = *entity_graph.root().unwrap();
 
 	expect(&app).to_have_component::<Running>(root)?;
 	// add `RunResult`, remove `Running`
@@ -27,7 +28,6 @@ pub fn works() -> Result<()> {
 	// remove `RunResult`
 	expect(&app).not().to_have_component::<Running>(root)?;
 	expect(&app).not().to_have_component::<RunResult>(root)?;
-
 
 	Ok(())
 }
