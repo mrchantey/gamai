@@ -6,6 +6,8 @@ use bevy_derive::DerefMut;
 use bevy_ecs::prelude::*;
 use petgraph::graph::DiGraph;
 use petgraph::graph::NodeIndex;
+use serde::Deserialize;
+use serde::Serialize;
 
 pub type ActionList = Vec<Box<dyn Action>>;
 pub type ActionTree = Tree<ActionList>;
@@ -24,7 +26,7 @@ impl ActionTree {
 	pub fn into_graph(self) -> ActionGraph { ActionGraph::from_tree(self) }
 }
 
-#[derive(Default, Deref, DerefMut)]
+#[derive(Default, Deref, DerefMut, Serialize, Deserialize)]
 pub struct ActionGraph(pub DiGraph<ActionList, ()>);
 
 impl Clone for ActionGraph {
