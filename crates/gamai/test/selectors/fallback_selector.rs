@@ -1,4 +1,4 @@
-use super::expect_tree;
+use crate::tests::utils::expect_tree;
 use bevy_app::App;
 use gamai::prelude::*;
 use sweet::*;

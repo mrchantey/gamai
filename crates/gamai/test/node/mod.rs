@@ -1,3 +1,5 @@
+pub mod interrupt;
+pub use self::interrupt::*;
 pub mod running;
 pub use self::running::*;
 pub mod score;

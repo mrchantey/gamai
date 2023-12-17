@@ -8,6 +8,9 @@ use std::fmt::Debug;
 #[component(storage = "SparseSet")]
 pub struct Running;
 
+
+
+
 /// Indicate the result of an action.
 /// As this is frequently added and removed, it is `SparseSet`.
 #[derive(Default, Debug, Clone, Copy, Component, PartialEq)]
@@ -19,6 +22,7 @@ pub enum RunResult {
 	/// The Action was unsuccessful.
 	Failure,
 }
+
 
 /// Syncs [`Running`] and [`RunResult`] components, by default added to [`PostNodeUpdateSet`].
 pub fn sync_running(

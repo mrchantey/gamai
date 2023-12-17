@@ -116,6 +116,7 @@ impl ActionGraph {
 			>>() {
 			let tracker = init_schedule();
 
+
 			app.configure_sets(
 				tracker.schedule.clone(),
 				tracker.pre_tick_set.clone(),
@@ -140,7 +141,8 @@ impl ActionGraph {
 			);
 			app.add_systems(
 				tracker.schedule.clone(),
-				sync_running.in_set(tracker.post_tick_set.clone()),
+				(sync_running, sync_interrupts)
+					.in_set(tracker.post_tick_set.clone()),
 			);
 
 			app.world.insert_resource(tracker);
