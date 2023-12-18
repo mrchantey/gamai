@@ -5,6 +5,7 @@ use gamai::prelude::*;
 #[action(system=test_action)]
 #[derive(Default, Clone, Component, Serialize, Deserialize)]
 pub struct TestAction {
+	#[shared]
 	pub score: Score,
 }
 impl TestAction {

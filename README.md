@@ -48,9 +48,9 @@ fn main(){
 
 
 #[derive(Component)]
+#[action(system=utility_selector)]
 struct UtilitySelector;
 
-#[action_for(UtilitySelector)]
 fn utility_selector(
 	selectors: Query<(UtilitySelector,Relations<GamaiChild>)>,
 	children: Query<Score>

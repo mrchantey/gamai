@@ -27,6 +27,7 @@ pub fn child_props(_attr: TokenStream, _item: TokenStream) -> TokenStream {
 ///
 /// #[action(always_pass)]
 /// struct AlwaysPass{
+/// 	#[shared]
 ///   score: Score,
 /// }
 ///

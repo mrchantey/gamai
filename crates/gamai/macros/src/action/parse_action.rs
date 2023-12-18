@@ -13,37 +13,26 @@ pub fn parse_action(
 	attr: proc_macro::TokenStream,
 	item: proc_macro::TokenStream,
 ) -> Result<TokenStream> {
-	let input = &syn::parse::<ItemStruct>(item)?;
+	let mut input = syn::parse::<ItemStruct>(item)?;
 	let args = &attributes_map(attr.into(), Some(&["system"]))?;
 
-	let action_trait = action_trait(input, args);
-	let into = into(input);
+	let action_trait = action_trait(&input, args);
+
+	remove_field_attributes(&mut input);
 
 	Ok(quote! {
 		use gamai::prelude::*;
 		use gamai::exports::*;
 		#input
 		#action_trait
-		#into
 	})
 }
 
-fn into(input: &ItemStruct) -> TokenStream {
-	let _ident = &input.ident;
-	quote! {
-		// impl Into<Box<dyn Action>> for #ident {
-		// 	fn into(self) -> Box<dyn Action> {
-		// 		Box::new(self)
-		// 	}
-		// }
-		// impl Into<ActionTree> for #ident {
-		// 	fn into(self) -> ActionTree {
-		// 		ActionTree::new(vec![Box::new(self)])
-		// 	}
-		// }
+fn remove_field_attributes(input: &mut ItemStruct) {
+	for field in input.fields.iter_mut() {
+		field.attrs = vec![];
 	}
 }
-
 
 fn action_trait(
 	input: &ItemStruct,
@@ -102,27 +91,25 @@ fn tick_system(args: &HashMap<String, Option<Expr>>) -> TokenStream {
 fn post_tick_system(input: &ItemStruct) -> TokenStream {
 	let ident = &input.ident;
 
-	let prop_types = input
-		.fields
-		.iter()
+	let shared_fields = input.fields.iter().filter(is_shared);
+
+	let prop_types = shared_fields
+		.clone()
 		.map(|field| {
 			let ty = &field.ty;
-			quote!(&mut #ty)
+			quote!(&mut #ty, )
 		})
 		.collect::<TokenStream>();
 
-	let prop_destructs = input
-		.fields
-		.iter()
+	let prop_destructs = shared_fields
+		.clone()
 		.map(|field| {
 			let field_ident = &field.ident;
 			quote!(mut #field_ident, )
 		})
 		.collect::<TokenStream>();
 
-	let prop_assignments = input
-		.fields
-		.iter()
+	let prop_assignments = shared_fields
 		.map(|field| {
 			let field_ident = &field.ident;
 			quote!(*#field_ident = value.#field_ident;)
@@ -143,10 +130,19 @@ fn post_tick_system(input: &ItemStruct) -> TokenStream {
 	}
 }
 
+
+fn is_shared(field: &&syn::Field) -> bool {
+	field
+		.attrs
+		.iter()
+		.any(|attr| attr.meta.path().is_ident("shared"))
+}
+
 fn spawn(input: &ItemStruct) -> TokenStream {
 	let insert_props = input
 		.fields
 		.iter()
+		.filter(is_shared)
 		.map(|field| {
 			let field_name = &field.ident;
 			// let field_type = &field.ty;

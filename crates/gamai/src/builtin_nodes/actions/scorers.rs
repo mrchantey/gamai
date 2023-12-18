@@ -6,6 +6,7 @@ use serde::Serialize;
 #[action(system=pass_scorer)]
 #[derive(Clone, Serialize, Deserialize, Component)]
 pub struct PassScorer {
+	#[shared]
 	pub score: Score,
 }
 
@@ -22,6 +23,7 @@ pub fn pass_scorer(mut query: Query<&mut PassScorer, With<Running>>) {
 #[action(system=fail_scorer)]
 #[derive(Default, Serialize, Deserialize, Clone, Component)]
 pub struct FailScorer {
+	#[shared]
 	pub score: Score,
 }
 

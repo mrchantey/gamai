@@ -12,10 +12,6 @@ backtrace := '0'
 default:
 	just --list
 
-### KEERA ###
-serve:
-	cargo watch -q -w 'crates/keera_serve/src' --ignore '{**/mod.rs}' -- just run keera_serve server
-
 ### UTILS ###
 @all command:
 	for file in {{crates}}; do \
@@ -36,17 +32,15 @@ clean-repo:
 # just ssl
 # just test-all
 
-fix:
-	cargo fix --allow-dirty --lib -p keera_core
-	cargo fix --allow-dirty --lib -p keera_play
-	cargo fix --allow-dirty --lib -p keera_serve
-	cargo fix --allow-dirty --lib -p keera_web
+fix *args:
+	for file in {{crates}}; do \
+			cargo fix --allow-dirty --lib -p $file {{args}}; \
+	done
 
-fmt:
-	cargo fmt -p keera_core
-	cargo fmt -p keera_play
-	cargo fmt -p keera_serve
-	cargo fmt -p keera_web
+fmt *args:
+	for file in {{crates}}; do \
+			cargo fmt -p $file {{args}}; \
+	done
 
 storage-push:
 	just -f ./config/storage.justfile push
