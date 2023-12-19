@@ -12,7 +12,7 @@ pub fn works() -> Result<()> {
 
 	let target = app.world.spawn_empty().id();
 
-	let action_graph = SuccessAction::default().into_tree().into_graph();
+	let action_graph = RunResultSetter::default().into_tree().into_graph();
 	action_graph.add_systems(&mut app);
 
 	let entity_graph = action_graph.spawn(&mut app.world, target);

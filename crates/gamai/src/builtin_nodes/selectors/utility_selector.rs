@@ -9,6 +9,15 @@ use serde::Serialize;
 #[action(system=utility_selector)]
 pub struct UtilitySelector;
 
+pub enum UtilityInterruptRate{
+	/// Interrupt every frame.
+	Frame,
+	/// Interrupt every time a score changes
+	ScoreChanged
+}
+
+//TODO interrupt if child score changes
+
 pub fn utility_selector(
 	mut commands: Commands,
 	selectors: Query<(Entity, &UtilitySelector, &Edges), With<Running>>,

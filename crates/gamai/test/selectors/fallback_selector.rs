@@ -9,8 +9,8 @@ pub fn works() -> Result<()> {
 	let target = app.world.spawn_empty().id();
 
 	let action_graph = FallbackSelector
-		.with_child(FailureAction)
-		.with_child(SuccessAction)
+		.with_child(RunResultSetter::new(RunResult::Failure))
+		.with_child(RunResultSetter::new(RunResult::Success))
 		.into_graph();
 
 	action_graph.add_systems(&mut app);

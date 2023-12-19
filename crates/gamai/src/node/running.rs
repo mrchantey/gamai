@@ -1,4 +1,6 @@
 use bevy_ecs::prelude::*;
+use serde::Deserialize;
+use serde::Serialize;
 use std::fmt::Debug;
 
 
@@ -13,7 +15,9 @@ pub struct Running;
 
 /// Indicate the result of an action.
 /// As this is frequently added and removed, it is `SparseSet`.
-#[derive(Default, Debug, Clone, Copy, Component, PartialEq)]
+#[derive(
+	Default, Debug, Clone, Copy, Component, PartialEq, Serialize, Deserialize,
+)]
 #[component(storage = "SparseSet")]
 pub enum RunResult {
 	#[default]

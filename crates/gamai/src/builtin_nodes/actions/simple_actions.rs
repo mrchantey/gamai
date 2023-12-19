@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use bevy_ecs::prelude::*;
+use bevy_utils::Duration;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -9,28 +10,34 @@ use serde::Serialize;
 pub struct EmptyAction;
 pub fn empty_action() {}
 
-#[action(system=success_action)]
+// intentionally dont deref to avoid bugs.
+#[action(system=set_run_result)]
 #[derive(Default, Clone, Serialize, Deserialize, Component)]
-pub struct SuccessAction;
+pub struct RunResultSetter(pub RunResult);
 
-pub fn success_action(
+impl RunResultSetter {
+	pub fn new(result: RunResult) -> Self { Self(result) }
+}
+
+
+pub fn set_run_result(
 	mut commands: Commands,
-	mut query: Query<Entity, (With<SuccessAction>, With<Running>)>,
+	mut query: Query<(Entity, &RunResultSetter), With<Running>>,
 ) {
-	for entity in query.iter_mut() {
-		commands.entity(entity).insert(RunResult::Success);
+	for (entity, result) in query.iter_mut() {
+		commands.entity(entity).insert(result.0);
 	}
 }
 
-#[action(system=failure_action)]
+#[action(system=succeed_in_duration)]
 #[derive(Default, Clone, Serialize, Deserialize, Component)]
-pub struct FailureAction;
+pub struct SucceedInDuration {
+	pub duration: Duration,
+}
 
-pub fn failure_action(
-	mut commands: Commands,
-	mut query: Query<Entity, (With<FailureAction>, With<Running>)>,
+pub fn succeed_in_duration(
+	mut _commands: Commands,
+	mut _query: Query<Entity, (With<RunResultSetter>, With<Running>)>,
 ) {
-	for entity in query.iter_mut() {
-		commands.entity(entity).insert(RunResult::Failure);
-	}
+	todo!()
 }
