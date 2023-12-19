@@ -25,21 +25,4 @@ impl EntityGraph {
 		message.value.spawn(&mut entity);
 		Ok(())
 	}
-	pub fn set_action_with_command(
-		&self,
-		commands: &mut Commands,
-		message: &SetActionMessage,
-	) -> Result<()> {
-		let entity = self
-			.0
-			.node_weight(NodeIndex::new(*message.index))
-			.ok_or_else(|| anyhow!("Node not found: {}", *message.index))?;
-
-		let mut entity = commands
-			.get_entity(*entity)
-			.ok_or_else(|| anyhow!("Entity not found: {}", *message.index))?;
-
-		message.value.spawn_with_command(&mut entity);
-		Ok(())
-	}
 }

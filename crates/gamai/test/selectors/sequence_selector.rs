@@ -9,8 +9,8 @@ pub fn works() -> Result<()> {
 	let target = app.world.spawn_empty().id();
 
 	let action_graph = SequenceSelector
-		.with_child(RunResultSetter::new(RunResult::Success))
-		.with_child(RunResultSetter::new(RunResult::Failure))
+		.with_child(SetRunResult::new(RunResult::Success))
+		.with_child(SetRunResult::new(RunResult::Failure))
 		.into_graph();
 
 	action_graph.add_systems(&mut app);

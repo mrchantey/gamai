@@ -52,17 +52,21 @@ impl ActionGraph {
 		Self(DiGraph::from_tree(root.into()))
 	}
 
-	pub fn spawn(&self, world: &mut World, target: Entity) -> EntityGraph {
+	pub fn spawn(
+		&self,
+		world: &mut impl WorldOrCommands,
+		target: Entity,
+	) -> EntityGraph {
 		// create entities & actions
 		let entity_graph = self.map(
 			|_, actions| {
-				let mut entity =
+				let entity =
 					world.spawn((TargetEntity(target), RunTimer::default()));
 
 				for action in actions.iter() {
-					action.spawn(&mut entity);
+					world.apply_action(action.as_ref(), entity);
 				}
-				entity.id()
+				entity
 			},
 			|_, _| (),
 		);
@@ -76,15 +80,18 @@ impl ActionGraph {
 				.neighbors_directed(index, petgraph::Direction::Outgoing)
 				.map(|index| entity_graph[index])
 				.collect::<Vec<_>>();
-			world.entity_mut(*entity).insert(Edges(children));
+			world.insert(*entity, Edges(children));
 		}
 
-		world
-			.entity_mut(*entity_graph.root().unwrap())
-			.insert(Running);
+		world.insert(*entity_graph.root().unwrap(), Running);
 
 		EntityGraph(entity_graph)
 	}
+
+	// pub fn spawn_with_commands(commands:&mut Commands){
+
+
+	// }
 
 	/// Can be called multiple times without duplication of systems
 	pub fn add_systems(&self, app: &mut App) {

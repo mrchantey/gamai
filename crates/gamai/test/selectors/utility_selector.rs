@@ -10,12 +10,12 @@ pub fn works() -> Result<()> {
 
 	let action_graph = UtilitySelector
 		.with_leaf(vec![
-			Box::new(ScoreSetter::new(Score::Fail)),
-			Box::new(RunResultSetter::new(RunResult::Failure)),
+			Box::new(SetScore::new(Score::Fail)),
+			Box::new(SetRunResult::new(RunResult::Failure)),
 		])
 		.with_leaf(vec![
-			Box::new(ScoreSetter::new(Score::Pass)),
-			Box::new(RunResultSetter::new(RunResult::Success)),
+			Box::new(SetScore::new(Score::Pass)),
+			Box::new(SetRunResult::new(RunResult::Success)),
 		])
 		.into_graph();
 

@@ -13,16 +13,15 @@ pub fn empty_action() {}
 // intentionally dont deref to avoid bugs.
 #[action(system=set_run_result)]
 #[derive(Default, Clone, Serialize, Deserialize, Component)]
-pub struct RunResultSetter(pub RunResult);
+pub struct SetRunResult(pub RunResult);
 
-impl RunResultSetter {
+impl SetRunResult {
 	pub fn new(result: RunResult) -> Self { Self(result) }
 }
 
-
 pub fn set_run_result(
 	mut commands: Commands,
-	mut query: Query<(Entity, &RunResultSetter), With<Running>>,
+	mut query: Query<(Entity, &SetRunResult), With<Running>>,
 ) {
 	for (entity, result) in query.iter_mut() {
 		commands.entity(entity).insert(result.0);
@@ -37,7 +36,7 @@ pub struct SucceedInDuration {
 
 pub fn succeed_in_duration(
 	mut _commands: Commands,
-	mut _query: Query<Entity, (With<RunResultSetter>, With<Running>)>,
+	mut _query: Query<Entity, (With<SetRunResult>, With<Running>)>,
 ) {
 	todo!()
 }
