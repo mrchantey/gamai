@@ -24,6 +24,16 @@ pub fn first_child_result<'a>(
 	})
 }
 
+pub fn any_child_score_changed(
+	children: &Edges,
+	children_scores_changed: &Query<(), Changed<Score>>,
+) -> bool {
+	children
+		.iter()
+		.any(|child| children_scores_changed.contains(*child))
+}
+
+
 pub fn highest_score(
 	children: &Edges,
 	children_scores: &Query<(Entity, &Score)>,

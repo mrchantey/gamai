@@ -3,8 +3,7 @@ use bevy_app::App;
 use gamai::prelude::*;
 use sweet::*;
 
-#[sweet_test]
-pub fn works() -> Result<()> {
+fn setup() -> (App, EntityGraph) {
 	let mut app = App::new();
 	let target = app.world.spawn_empty().id();
 
@@ -21,6 +20,13 @@ pub fn works() -> Result<()> {
 
 	action_graph.add_systems(&mut app);
 	let entity_graph = action_graph.spawn(&mut app.world, target);
+	(app, entity_graph)
+}
+
+
+#[sweet_test]
+pub fn works() -> Result<()> {
+	let (mut app, entity_graph) = setup();
 
 	app.update();
 	expect_tree(
@@ -55,3 +61,24 @@ pub fn works() -> Result<()> {
 
 	Ok(())
 }
+// #[sweet_test]
+// pub fn interrupts() -> Result<()> {
+// 	let (mut app, entity_graph) = setup();
+// 	app.update();
+
+// 	let child = entity_graph.clone().into_tree().children[1].value;
+// 	app.world
+// 		.entity_mut(child)
+// 		.insert(SetScore::new(Score::Pass));
+
+// 	app.update();
+// 	expect_tree(
+// 		&mut app,
+// 		&entity_graph,
+// 		Tree::new(Some(&Running))
+// 			.with_leaf(None)
+// 			.with_leaf(Some(&Running)),
+// 	)?;
+
+// 	Ok(())
+// }

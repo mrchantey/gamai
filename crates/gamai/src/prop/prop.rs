@@ -30,7 +30,7 @@ pub trait PropInput<T> {
 	fn show_if(&self) -> bool { true }
 }
 
-pub struct SliderProp<T> {
+pub struct RangeProp<T> {
 	pub value: T,
 	pub min: T,
 	pub max: T,

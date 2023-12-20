@@ -25,4 +25,5 @@ impl EntityGraph {
 		message.value.spawn(&mut entity);
 		Ok(())
 	}
+	pub fn into_tree(self) -> Tree<Entity> { self.0.into_tree() }
 }
